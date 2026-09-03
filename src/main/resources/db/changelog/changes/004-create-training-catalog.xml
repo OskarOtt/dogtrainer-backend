@@ -1,0 +1,65 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.29.xsd">
+
+    <changeSet id="004-create-training-catalog" author="oskott">
+        <createTable tableName="training_categories">
+            <column name="id" type="UUID">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(255)">
+                <constraints nullable="false" unique="true" uniqueConstraintName="uc_training_categories_name"/>
+            </column>
+            <column name="description" type="VARCHAR(1024)"/>
+            <column name="display_order" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createTable tableName="activities">
+            <column name="id" type="UUID">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="category_id" type="UUID">
+                <constraints nullable="false" foreignKeyName="fk_activities_category" references="training_categories(id)"/>
+            </column>
+            <column name="name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="VARCHAR(1024)"/>
+            <column name="display_order" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createIndex indexName="idx_activities_category_id" tableName="activities">
+            <column name="category_id"/>
+        </createIndex>
+
+        <createTable tableName="exercises">
+            <column name="id" type="UUID">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="activity_id" type="UUID">
+                <constraints nullable="false" foreignKeyName="fk_exercises_activity" references="activities(id)"/>
+            </column>
+            <column name="name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="VARCHAR(2048)"/>
+            <column name="difficulty" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="instructions" type="VARCHAR(4096)"/>
+            <column name="display_order" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createIndex indexName="idx_exercises_activity_id" tableName="exercises">
+            <column name="activity_id"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

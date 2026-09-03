@@ -1,0 +1,604 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.29.xsd">
+
+    <changeSet id="005-seed-training-catalog" author="oskott" context="!no-seed">
+        <insert tableName="training_categories">
+                <column name="id" value="b08ce9fc-a69a-4308-a846-6c5e464c9ad7"/>
+                <column name="name" value="Everyday Training"/>
+                <column name="description" value="Foundational manners and life skills for daily life with your dog."/>
+                <column name="display_order" value="1"/>
+        </insert>
+        <insert tableName="training_categories">
+                <column name="id" value="7245a3a5-ee6a-4a9f-ac65-a51955d9d0c8"/>
+                <column name="name" value="Obedience"/>
+                <column name="description" value="Classic obedience skills for control and reliability."/>
+                <column name="display_order" value="2"/>
+        </insert>
+        <insert tableName="training_categories">
+                <column name="id" value="a8cf61fd-4f04-43a4-8e10-6b0a8d8b5ad4"/>
+                <column name="name" value="Agility"/>
+                <column name="description" value="Speed, precision, and body awareness over obstacles."/>
+                <column name="display_order" value="3"/>
+        </insert>
+        <insert tableName="training_categories">
+                <column name="id" value="e483a02a-0797-42cb-a722-a64ed0c663f3"/>
+                <column name="name" value="Tracking"/>
+                <column name="description" value="Following ground scent over distance and time."/>
+                <column name="display_order" value="4"/>
+        </insert>
+        <insert tableName="training_categories">
+                <column name="id" value="0cea47b6-b828-439f-bd85-702dbc47210e"/>
+                <column name="name" value="Search"/>
+                <column name="description" value="Systematic searching of areas for a target."/>
+                <column name="display_order" value="5"/>
+        </insert>
+        <insert tableName="training_categories">
+                <column name="id" value="0993559e-fa3b-43eb-a0bc-1f1de338e3df"/>
+                <column name="name" value="Nosework"/>
+                <column name="description" value="Detection of target odors in various environments."/>
+                <column name="display_order" value="6"/>
+        </insert>
+        <insert tableName="training_categories">
+                <column name="id" value="7480990f-87d6-4214-a6bf-b1071c42b147"/>
+                <column name="name" value="Social Training"/>
+                <column name="description" value="Confidence and appropriate behavior around people and other dogs."/>
+                <column name="display_order" value="7"/>
+        </insert>
+        <insert tableName="activities">
+                <column name="id" value="1dc91f9e-fe5c-4f9a-86e2-a7aecea48e4c"/>
+                <column name="category_id" value="b08ce9fc-a69a-4308-a846-6c5e464c9ad7"/>
+                <column name="name" value="House Manners"/>
+                <column name="description" value="Calm behavior inside the home."/>
+                <column name="display_order" value="1"/>
+        </insert>
+        <insert tableName="activities">
+                <column name="id" value="e8a96d17-623a-4e15-9fa8-3e96eb23fc7e"/>
+                <column name="category_id" value="b08ce9fc-a69a-4308-a846-6c5e464c9ad7"/>
+                <column name="name" value="Leash Walking"/>
+                <column name="description" value="Comfortable, controlled walking on leash."/>
+                <column name="display_order" value="2"/>
+        </insert>
+        <insert tableName="activities">
+                <column name="id" value="997065fb-78ed-44ef-9e3d-2f759fd03a5b"/>
+                <column name="category_id" value="7245a3a5-ee6a-4a9f-ac65-a51955d9d0c8"/>
+                <column name="name" value="Recall"/>
+                <column name="description" value="Coming when called, in any situation."/>
+                <column name="display_order" value="1"/>
+        </insert>
+        <insert tableName="activities">
+                <column name="id" value="35cfbaac-00bd-4b8d-a3f4-f5a197909b78"/>
+                <column name="category_id" value="7245a3a5-ee6a-4a9f-ac65-a51955d9d0c8"/>
+                <column name="name" value="Heel"/>
+                <column name="description" value="Walking in a controlled position beside the handler."/>
+                <column name="display_order" value="2"/>
+        </insert>
+        <insert tableName="activities">
+                <column name="id" value="17831d10-fcfc-4a8f-89cf-befb315fe228"/>
+                <column name="category_id" value="7245a3a5-ee6a-4a9f-ac65-a51955d9d0c8"/>
+                <column name="name" value="Stay"/>
+                <column name="description" value="Holding a position until released."/>
+                <column name="display_order" value="3"/>
+        </insert>
+        <insert tableName="activities">
+                <column name="id" value="db8a8f95-1002-4e7b-8dfb-5cbf8f4f525e"/>
+                <column name="category_id" value="7245a3a5-ee6a-4a9f-ac65-a51955d9d0c8"/>
+                <column name="name" value="Retrieve"/>
+                <column name="description" value="Fetching and delivering an object on cue."/>
+                <column name="display_order" value="4"/>
+        </insert>
+        <insert tableName="activities">
+                <column name="id" value="dfe7cb68-311c-4994-867d-acfa6f6cf176"/>
+                <column name="category_id" value="a8cf61fd-4f04-43a4-8e10-6b0a8d8b5ad4"/>
+                <column name="name" value="Jumps"/>
+                <column name="description" value="Clearing hurdles safely and confidently."/>
+                <column name="display_order" value="1"/>
+        </insert>
+        <insert tableName="activities">
+                <column name="id" value="8c5f92f0-17b8-4210-b4d4-f47406997f3e"/>
+                <column name="category_id" value="a8cf61fd-4f04-43a4-8e10-6b0a8d8b5ad4"/>
+                <column name="name" value="Tunnels"/>
+                <column name="description" value="Confidently running through tunnels."/>
+                <column name="display_order" value="2"/>
+        </insert>
+        <insert tableName="activities">
+                <column name="id" value="426b31ab-ab6d-433b-a183-310e97fe3ca4"/>
+                <column name="category_id" value="a8cf61fd-4f04-43a4-8e10-6b0a8d8b5ad4"/>
+                <column name="name" value="Contact Equipment"/>
+                <column name="description" value="Safely navigating equipment with contact zones."/>
+                <column name="display_order" value="3"/>
+        </insert>
+        <insert tableName="activities">
+                <column name="id" value="72206102-af16-4825-a9c7-f90dcdcf9fa4"/>
+                <column name="category_id" value="e483a02a-0797-42cb-a722-a64ed0c663f3"/>
+                <column name="name" value="Track Laying"/>
+                <column name="description" value="Following a laid track to its end."/>
+                <column name="display_order" value="1"/>
+        </insert>
+        <insert tableName="activities">
+                <column name="id" value="de1d2784-550d-446b-a226-47d7d172e36c"/>
+                <column name="category_id" value="e483a02a-0797-42cb-a722-a64ed0c663f3"/>
+                <column name="name" value="Article Indication"/>
+                <column name="description" value="Finding and indicating articles along a track."/>
+                <column name="display_order" value="2"/>
+        </insert>
+        <insert tableName="activities">
+                <column name="id" value="d20f8674-123a-4b58-9d1f-4d174990d7a2"/>
+                <column name="category_id" value="0cea47b6-b828-439f-bd85-702dbc47210e"/>
+                <column name="name" value="Room Search"/>
+                <column name="description" value="Searching rooms methodically."/>
+                <column name="display_order" value="1"/>
+        </insert>
+        <insert tableName="activities">
+                <column name="id" value="9c6f2e04-48d5-46dc-bc38-5e0314539eaa"/>
+                <column name="category_id" value="0cea47b6-b828-439f-bd85-702dbc47210e"/>
+                <column name="name" value="Vehicle Search"/>
+                <column name="description" value="Searching vehicles for a target."/>
+                <column name="display_order" value="2"/>
+        </insert>
+        <insert tableName="activities">
+                <column name="id" value="7184eb2c-6c06-4219-837c-e1e8040bd727"/>
+                <column name="category_id" value="0993559e-fa3b-43eb-a0bc-1f1de338e3df"/>
+                <column name="name" value="Container Search"/>
+                <column name="description" value="Finding target odor among a set of containers."/>
+                <column name="display_order" value="1"/>
+        </insert>
+        <insert tableName="activities">
+                <column name="id" value="7840063e-8bd7-4f20-9744-4b9f6e14a2d6"/>
+                <column name="category_id" value="0993559e-fa3b-43eb-a0bc-1f1de338e3df"/>
+                <column name="name" value="Exterior Search"/>
+                <column name="description" value="Finding target odor in outdoor environments."/>
+                <column name="display_order" value="2"/>
+        </insert>
+        <insert tableName="activities">
+                <column name="id" value="b839b4a7-0d6f-4bd5-b867-2a9cc756630e"/>
+                <column name="category_id" value="7480990f-87d6-4214-a6bf-b1071c42b147"/>
+                <column name="name" value="Dog-Dog Interaction"/>
+                <column name="description" value="Calm, appropriate behavior around other dogs."/>
+                <column name="display_order" value="1"/>
+        </insert>
+        <insert tableName="activities">
+                <column name="id" value="430fab6c-11f9-4bff-bfaf-918846303195"/>
+                <column name="category_id" value="7480990f-87d6-4214-a6bf-b1071c42b147"/>
+                <column name="name" value="Human Interaction"/>
+                <column name="description" value="Comfortable, appropriate behavior around people."/>
+                <column name="display_order" value="2"/>
+        </insert>
+        <insert tableName="exercises">
+                <column name="id" value="2dc85e52-929f-47e5-85b1-c80ff07aff1b"/>
+                <column name="activity_id" value="1dc91f9e-fe5c-4f9a-86e2-a7aecea48e4c"/>
+                <column name="name" value="Settle on Mat"/>
+                <column name="description" value="Teach the dog to relax on a designated mat on cue."/>
+                <column name="difficulty" value="BEGINNER"/>
+                <column name="instructions" value="Lure the dog onto the mat with a treat. Mark and reward calm behavior. Gradually increase duration before rewarding."/>
+                <column name="display_order" value="1"/>
+        </insert>
+        <insert tableName="exercises">
+                <column name="id" value="7d28f6e3-a8d2-4a9e-a00b-7c28e9365f86"/>
+                <column name="activity_id" value="1dc91f9e-fe5c-4f9a-86e2-a7aecea48e4c"/>
+                <column name="name" value="Polite Greetings"/>
+                <column name="description" value="Greet people without jumping."/>
+                <column name="difficulty" value="BEGINNER"/>
+                <column name="instructions" value="Ask a helper to approach. Reward four paws on the floor. Have the helper step back if the dog jumps, and only reward calm greetings."/>
+                <column name="display_order" value="2"/>
+        </insert>
+        <insert tableName="exercises">
+                <column name="id" value="bf3c5d78-642a-4a8a-8179-da1f5d092411"/>
+                <column name="activity_id" value="1dc91f9e-fe5c-4f9a-86e2-a7aecea48e4c"/>
+                <column name="name" value="Wait at Doors"/>
+                <column name="description" value="Wait for permission before going through doorways."/>
+                <column name="difficulty" value="INTERMEDIATE"/>
+                <column name="instructions" value="Open the door slightly. If the dog moves toward it, close it. Reward waiting, then release with a cue to pass through."/>
+                <column name="display_order" value="3"/>
+        </insert>
+        <insert tableName="exercises">
+                <column name="id" value="4bab3982-9086-4866-abbc-b36c8e9467ac"/>
+                <column name="activity_id" value="e8a96d17-623a-4e15-9fa8-3e96eb23fc7e"/>
+                <column name="name" value="Loose Leash Walking"/>
+                <column name="description" value="Walk beside the handler without pulling."/>
+                <column name="difficulty" value="BEGINNER"/>
+                <column name="instructions" value="Stop moving the instant the leash goes tight. Resume walking once the dog returns to your side, rewarding frequently."/>
+                <column name="display_order" value="1"/>
+        </insert>
+        <insert tableName="exercises">
+                <column name="id" value="09cff92f-54b5-4e3e-b370-18f27076fe15"/>
+                <column name="activity_id" value="e8a96d17-623a-4e15-9fa8-3e96eb23fc7e"/>
+                <column name="name" value="Walking Past Distractions"/>
+                <column name="description" value="Maintain loose leash walking near distractions."/>
+                <column name="difficulty" value="INTERMEDIATE"/>
+                <column name="instructions" value="Start at a distance from the distraction where the dog can stay focused. Reward attention, gradually decreasing distance over sessions."/>
+                <column name="display_order" value="2"/>
+        </insert>
+        <insert tableName="exercises">
+                <column name="id" value="85305d88-5012-4ed1-80e2-f0072ea3168a"/>
+                <column name="activity_id" value="e8a96d17-623a-4e15-9fa8-3e96eb23fc7e"/>
+                <column name="name" value="Auto Check-In"/>
+                <column name="description" value="Dog voluntarily looks at the handler while walking."/>
+                <column name="difficulty" value="ADVANCED"/>
+                <column name="instructions" value="Walk normally and mark/reward any spontaneous eye contact without cueing it. Increase the interval between rewards over time."/>
+                <column name="display_order" value="3"/>
+        </insert>
+        <insert tableName="exercises">
+                <column name="id" value="6b41d699-cc9d-4831-991a-5bfe5c6cccdd"/>
+                <column name="activity_id" value="997065fb-78ed-44ef-9e3d-2f759fd03a5b"/>
+                <column name="name" value="Basic Recall"/>
+                <column name="description" value="Recall in a low-distraction environment."/>
+                <column name="difficulty" value="BEGINNER"/>
+                <column name="instructions" value="Say the recall cue once from a short distance. Reward enthusiastically the instant the dog arrives."/>
+                <column name="display_order" value="1"/>
+        </insert>
+        <insert tableName="exercises">
+                <column name="id" value="c1da10d7-ccbc-400b-bf66-2ca0b7e74a98"/>
+                <column name="activity_id" value="997065fb-78ed-44ef-9e3d-2f759fd03a5b"/>
+                <column name="name" value="Long Distance Recall"/>
+                <column name="description" value="Recall from further away."/>
+                <column name="difficulty" value="INTERMEDIATE"/>
+                <column name="instructions" value="Gradually increase distance between reps. Use a long line for safety and reward big for full recalls."/>
+                <column name="display_order" value="2"/>
+        </insert>
+        <insert tableName="exercises">
+                <column name="id" value="a945120a-8f82-4035-9570-a2343dd5f301"/>
+                <column name="activity_id" value="997065fb-78ed-44ef-9e3d-2f759fd03a5b"/>
+                <column name="name" value="Recall With Distractions"/>
+                <column name="description" value="Recall with competing distractions present."/>
+                <column name="difficulty" value="ADVANCED"/>
+                <column name="instructions" value="Introduce mild distractions (toys, other people) at a manageable distance. Reward heavily for choosing to come away from the distraction."/>
+                <column name="display_order" value="3"/>
+        </insert>
+        <insert tableName="exercises">
+                <column name="id" value="ff2b7af7-4ccf-4d74-a52c-3f565805d434"/>
+                <column name="activity_id" value="35cfbaac-00bd-4b8d-a3f4-f5a197909b78"/>
+                <column name="name" value="Heel Position Basics"/>
+                <column name="description" value="Hold the heel position while standing and moving a few steps."/>
+                <column name="difficulty" value="BEGINNER"/>
+                <column name="instructions" value="Lure the dog into position at your side. Take one or two steps, mark, and reward while the dog holds position."/>
+                <column name="display_order" value="1"/>
+        </insert>
+        <insert tableName="exercises">
+                <column name="id" value="cb4b4401-0533-4ef2-ae5b-894c5bb5b5d9"/>
+                <column name="activity_id" value="35cfbaac-00bd-4b8d-a3f4-f5a197909b78"/>
+                <column name="name" value="Heel With Turns"/>
+                <column name="description" value="Maintain heel position through turns."/>
+                <column name="difficulty" value="INTERMEDIATE"/>
+                <column name="instructions" value="Practice slow turns in both directions, rewarding the dog for adjusting its pace and position to stay aligned."/>
+                <column name="display_order" value="2"/>
+        </insert>
+        <insert tableName="exercises">
+                <column name="id" value="5cdb09d2-eaeb-48cc-a9eb-4789b3d16ab9"/>
+                <column name="activity_id" value="35cfbaac-00bd-4b8d-a3f4-f5a197909b78"/>
+                <column name="name" value="Heel Off Leash"/>
+                <column name="description" value="Maintain heel position without a leash."/>
+                <column name="difficulty" value="ADVANCED"/>
+                <column name="instructions" value="Remove the leash in a secure area. Reward frequently at first, gradually extending distance between rewards."/>
+                <column name="display_order" value="3"/>
+        </insert>
+        <insert tableName="exercises">
+                <column name="id" value="7e4c931a-5bd0-4f2f-885c-16e3add9ee7e"/>
+                <column name="activity_id" value="17831d10-fcfc-4a8f-89cf-befb315fe228"/>
+                <column name="name" value="Sit Stay"/>
+                <column name="description" value="Hold a sit position for increasing durations."/>
+                <column name="difficulty" value="BEGINNER"/>
+                <column name="instructions" value="Cue a sit, then wait a few seconds before rewarding. Gradually increase the duration before releasing."/>
+                <column name="display_order" value="1"/>
+        </insert>
+        <insert tableName="exercises">
+                <column name="id" value="5433b3f0-8112-4b1b-84d6-bfcf907ad4cf"/>
+                <column name="activity_id" value="17831d10-fcfc-4a8f-89cf-befb315fe228"/>
+                <column name="name" value="Down Stay"/>
+                <column name="description" value="Hold a down position for increasing durations."/>
+                <column name="difficulty" value="BEGINNER"/>
+                <column name="instructions" value="Cue a down, then wait before rewarding. Gradually add duration, distance, and mild distractions."/>
+                <column name="display_order" value="2"/>
+        </insert>
+        <insert tableName="exercises">
+                <column name="id" value="ae23e433-dc5d-4396-8b94-e120891fa3c0"/>
+                <column name="activity_id" value="17831d10-fcfc-4a8f-89cf-befb315fe228"/>
+                <column name="name" value="Stay With Distance"/>
+                <column name="description" value="Hold a stay while the handler moves away."/>
+                <column name="difficulty" value="ADVANCED"/>
+                <column name="instructions" value="Cue a stay, take one step back, then return and reward. Gradually increase the distance you move away."/>
+                <column name="display_order" value="3"/>
+        </insert>
+        <insert tableName="exercises">
+                <column name="id" value="011f2e1d-e861-4a4a-881f-7b4e0bdfb8e8"/>
+                <column name="activity_id" value="db8a8f95-1002-4e7b-8dfb-5cbf8f4f525e"/>
+                <column name="name" value="Basic Retrieve"/>
+                <column name="description" value="Pick up and hold a toy or dumbbell."/>
+                <column name="difficulty" value="BEGINNER"/>
+                <column name="instructions" value="Encourage the dog to take the object in its mouth. Reward for holding it briefly, then for releasing it on cue."/>
+                <column name="display_order" value="1"/>
+        </insert>
+        <insert tableName="exercises">
+                <column name="id" value="e435a0c3-158d-49e0-8756-184e706aac58"/>
+                <column name="activity_id" value="db8a8f95-1002-4e7b-8dfb-5cbf8f4f525e"/>
+                <column name="name" value="Retrieve to Hand"/>
+                <column name="description" value="Fetch an object and deliver it directly to hand."/>
+                <column name="difficulty" value="INTERMEDIATE"/>
+                <column name="instructions" value="Toss the object a short distance. Reward the dog for bringing it all the way back and releasing it into your hand."/>
+                <column name="display_order" value="2"/>
+        </insert>
+        <insert tableName="exercises">
+                <column name="id" value="9253eeaa-ea46-4fc6-83c1-8a42c06ee221"/>
+                <column name="activity_id" value="db8a8f95-1002-4e7b-8dfb-5cbf8f4f525e"/>
+                <column name="name" value="Retrieve Over Obstacle"/>
+                <column name="description" value="Retrieve an object while clearing a low obstacle."/>
+                <column name="difficulty" value="ADVANCED"/>
+                <column name="instructions" value="Place a low obstacle between the dog and the object. Reward clean retrieves that clear the obstacle both ways."/>
+                <column name="display_order" value="3"/>
+        </insert>
+        <insert tableName="exercises">
+                <column name="id" value="26127c9a-4112-4975-9cf4-6aa33a50e067"/>
+                <column name="activity_id" value="dfe7cb68-311c-4994-867d-acfa6f6cf176"/>
+                <column name="name" value="Single Jump"/>
+                <column name="description" value="Clear a single jump on cue."/>
+                <column name="difficulty" value="BEGINNER"/>
+                <column name="instructions" value="Set the jump at a low height. Send or lead the dog over it, rewarding immediately on landing."/>
+                <column name="display_order" value="1"/>
+        </insert>
+        <insert tableName="exercises">
+                <column name="id" value="bed72e57-9b6d-4fb6-a661-264fb4fd2252"/>
+                <column name="activity_id" value="dfe7cb68-311c-4994-867d-acfa6f6cf176"/>
+                <column name="name" value="Jump Sequence"/>
+                <column name="description" value="Clear a short sequence of jumps."/>
+                <column name="difficulty" value="INTERMEDIATE"/>
+                <column name="instructions" value="Arrange two to three jumps in a line. Handle the dog through the sequence, rewarding at the end."/>
+                <column name="display_order" value="2"/>
+        </insert>
+        <insert tableName="exercises">
+                <column name="id" value="df99c4c1-f1ca-45ee-aaae-364dd24ca66a"/>
+                <column name="activity_id" value="dfe7cb68-311c-4994-867d-acfa6f6cf176"/>
+                <column name="name" value="Jump With Distraction"/>
+                <column name="description" value="Clear a jump with distractions nearby."/>
+                <column name="difficulty" value="ADVANCED"/>
+                <column name="instructions" value="Add a mild distraction near the jump. Reward the dog for staying focused on the obstacle and handler."/>
+                <column name="display_order" value="3"/>
+        </insert>
+        <insert tableName="exercises">
+                <column name="id" value="649b7a83-2b6d-4ffd-8ee8-9bd37910d1ed"/>
+                <column name="activity_id" value="8c5f92f0-17b8-4210-b4d4-f47406997f3e"/>
+                <column name="name" value="Straight Tunnel"/>
+                <column name="description" value="Run through a straight, short tunnel."/>
+                <column name="difficulty" value="BEGINNER"/>
+                <column name="instructions" value="Hold the tunnel open and call the dog through from the other end. Reward immediately on exit."/>
+                <column name="display_order" value="1"/>
+        </insert>
+        <insert tableName="exercises">
+                <column name="id" value="0004ec8f-5657-4792-84b3-e3d8317a9ab1"/>
+                <column name="activity_id" value="8c5f92f0-17b8-4210-b4d4-f47406997f3e"/>
+                <column name="name" value="Curved Tunnel"/>
+                <column name="description" value="Run through a curved tunnel."/>
+                <column name="difficulty" value="INTERMEDIATE"/>
+                <column name="instructions" value="Gradually increase the curve of the tunnel over sessions, rewarding confident, fast runs."/>
+                <column name="display_order" value="2"/>
+        </insert>
+        <insert tableName="exercises">
+                <column name="id" value="c33ed54d-af89-4bf3-a8ab-4f0f442c5744"/>
+                <column name="activity_id" value="8c5f92f0-17b8-4210-b4d4-f47406997f3e"/>
+                <column name="name" value="Tunnel Discrimination"/>
+                <column name="description" value="Choose the correct obstacle when a tunnel is next to another piece of equipment."/>
+                <column name="difficulty" value="ADVANCED"/>
+                <column name="instructions" value="Position the tunnel next to another obstacle. Handle the dog to clearly indicate the tunnel, rewarding correct choices."/>
+                <column name="display_order" value="3"/>
+        </insert>
+        <insert tableName="exercises">
+                <column name="id" value="c75a9b0c-ddf5-4591-94b2-bc6f75ee7958"/>
+                <column name="activity_id" value="426b31ab-ab6d-433b-a183-310e97fe3ca4"/>
+                <column name="name" value="A-Frame Basics"/>
+                <column name="description" value="Climb and descend a low A-frame."/>
+                <column name="difficulty" value="BEGINNER"/>
+                <column name="instructions" value="Start with the A-frame at its lowest height. Guide the dog over slowly, rewarding for touching the contact zone at the bottom."/>
+                <column name="display_order" value="1"/>
+        </insert>
+        <insert tableName="exercises">
+                <column name="id" value="bf5b232f-7184-42cd-a438-04fd168c7613"/>
+                <column name="activity_id" value="426b31ab-ab6d-433b-a183-310e97fe3ca4"/>
+                <column name="name" value="Dog Walk"/>
+                <column name="description" value="Cross a raised plank confidently."/>
+                <column name="difficulty" value="INTERMEDIATE"/>
+                <column name="instructions" value="Begin with the plank close to the ground. Reward a steady pace and a controlled stop in the contact zone."/>
+                <column name="display_order" value="2"/>
+        </insert>
+        <insert tableName="exercises">
+                <column name="id" value="8ce30a9b-7621-4365-88c2-6c36d6c53981"/>
+                <column name="activity_id" value="426b31ab-ab6d-433b-a183-310e97fe3ca4"/>
+                <column name="name" value="Teeter Introduction"/>
+                <column name="description" value="Get comfortable with the teeter&apos;s movement."/>
+                <column name="difficulty" value="ADVANCED"/>
+                <column name="instructions" value="Start with the teeter propped near the ground so it barely moves. Gradually increase the tip as the dog gains confidence."/>
+                <column name="display_order" value="3"/>
+        </insert>
+        <insert tableName="exercises">
+                <column name="id" value="13ea3466-107a-4368-8edf-93dda8c24808"/>
+                <column name="activity_id" value="72206102-af16-4825-a9c7-f90dcdcf9fa4"/>
+                <column name="name" value="Short Straight Track"/>
+                <column name="description" value="Follow a short, straight track."/>
+                <column name="difficulty" value="BEGINNER"/>
+                <column name="instructions" value="Lay a short straight track with food drops. Let it age a few minutes, then work the dog along it on a tracking line."/>
+                <column name="display_order" value="1"/>
+        </insert>
+        <insert tableName="exercises">
+                <column name="id" value="6a2096eb-9950-4a70-b6e5-26a68344652f"/>
+                <column name="activity_id" value="72206102-af16-4825-a9c7-f90dcdcf9fa4"/>
+                <column name="name" value="Track With Turns"/>
+                <column name="description" value="Follow a track that includes turns."/>
+                <column name="difficulty" value="INTERMEDIATE"/>
+                <column name="instructions" value="Lay a track with one or two turns. Allow the dog to work out the turn direction, rewarding at the corner."/>
+                <column name="display_order" value="2"/>
+        </insert>
+        <insert tableName="exercises">
+                <column name="id" value="7921e364-6a4b-40ea-b1a9-7456c430ce08"/>
+                <column name="activity_id" value="72206102-af16-4825-a9c7-f90dcdcf9fa4"/>
+                <column name="name" value="Aged Track"/>
+                <column name="description" value="Follow a track that has aged for an extended period."/>
+                <column name="difficulty" value="ADVANCED"/>
+                <column name="instructions" value="Lay the track and let it age 30-60 minutes before running it, rewarding a confident, committed nose-down search."/>
+                <column name="display_order" value="3"/>
+        </insert>
+        <insert tableName="exercises">
+                <column name="id" value="86b3c657-3abf-4e75-9c0c-5a6a987dc58e"/>
+                <column name="activity_id" value="de1d2784-550d-446b-a226-47d7d172e36c"/>
+                <column name="name" value="Single Article Find"/>
+                <column name="description" value="Locate and indicate a single article on the track."/>
+                <column name="difficulty" value="INTERMEDIATE"/>
+                <column name="instructions" value="Place one article partway along the track. Reward any clear indication (down, sit, or pointing) at the article."/>
+                <column name="display_order" value="1"/>
+        </insert>
+        <insert tableName="exercises">
+                <column name="id" value="08f160ee-1523-4c54-95cc-d51a97310ea1"/>
+                <column name="activity_id" value="de1d2784-550d-446b-a226-47d7d172e36c"/>
+                <column name="name" value="Multiple Article Discrimination"/>
+                <column name="description" value="Find several articles while ignoring distractor objects."/>
+                <column name="difficulty" value="ADVANCED"/>
+                <column name="instructions" value="Place multiple articles and distractor objects along the track. Reward indications only on the correct articles."/>
+                <column name="display_order" value="2"/>
+        </insert>
+        <insert tableName="exercises">
+                <column name="id" value="3a4b72d6-eca2-4e04-ba7b-3cfccc5da690"/>
+                <column name="activity_id" value="d20f8674-123a-4b58-9d1f-4d174990d7a2"/>
+                <column name="name" value="Single Room Search"/>
+                <column name="description" value="Search one room for a hidden target."/>
+                <column name="difficulty" value="BEGINNER"/>
+                <column name="instructions" value="Hide a target in an easy spot in a single room. Send the dog in and reward a clear indication."/>
+                <column name="display_order" value="1"/>
+        </insert>
+        <insert tableName="exercises">
+                <column name="id" value="4d1e1642-2e83-43a7-9093-5c55b0eb7759"/>
+                <column name="activity_id" value="d20f8674-123a-4b58-9d1f-4d174990d7a2"/>
+                <column name="name" value="Multi-Room Search"/>
+                <column name="description" value="Search multiple connected rooms."/>
+                <column name="difficulty" value="INTERMEDIATE"/>
+                <column name="instructions" value="Hide the target in one of several rooms. Let the dog work through each room systematically before rewarding the find."/>
+                <column name="display_order" value="2"/>
+        </insert>
+        <insert tableName="exercises">
+                <column name="id" value="e109d620-f706-48e0-96fe-789409b46c10"/>
+                <column name="activity_id" value="d20f8674-123a-4b58-9d1f-4d174990d7a2"/>
+                <column name="name" value="Search With Distractions"/>
+                <column name="description" value="Search an area containing distracting items or scents."/>
+                <column name="difficulty" value="ADVANCED"/>
+                <column name="instructions" value="Add distractor scents or items near the target. Reward only indications on the correct target."/>
+                <column name="display_order" value="3"/>
+        </insert>
+        <insert tableName="exercises">
+                <column name="id" value="e83bcc83-e666-4a26-b4a7-e78f7bc4fe2d"/>
+                <column name="activity_id" value="9c6f2e04-48d5-46dc-bc38-5e0314539eaa"/>
+                <column name="name" value="Exterior Vehicle Search"/>
+                <column name="description" value="Search the outside of a vehicle."/>
+                <column name="difficulty" value="INTERMEDIATE"/>
+                <column name="instructions" value="Hide the target on the exterior of a vehicle. Guide the dog around the vehicle systematically, rewarding the indication."/>
+                <column name="display_order" value="1"/>
+        </insert>
+        <insert tableName="exercises">
+                <column name="id" value="7ed0f1b5-a7b5-4e13-b3a2-3556fec04065"/>
+                <column name="activity_id" value="9c6f2e04-48d5-46dc-bc38-5e0314539eaa"/>
+                <column name="name" value="Interior Vehicle Search"/>
+                <column name="description" value="Search inside a vehicle with doors open."/>
+                <column name="difficulty" value="ADVANCED"/>
+                <column name="instructions" value="Hide the target inside the vehicle. Allow the dog to search the interior with supervision, rewarding a clear indication."/>
+                <column name="display_order" value="2"/>
+        </insert>
+        <insert tableName="exercises">
+                <column name="id" value="3758f44a-60e2-4ae2-b83d-31c0d29b5ca4"/>
+                <column name="activity_id" value="7184eb2c-6c06-4219-837c-e1e8040bd727"/>
+                <column name="name" value="Single Container Odor ID"/>
+                <column name="description" value="Identify the container containing target odor."/>
+                <column name="difficulty" value="BEGINNER"/>
+                <column name="instructions" value="Place several containers in a line with the odor in one. Reward the dog for indicating the correct container."/>
+                <column name="display_order" value="1"/>
+        </insert>
+        <insert tableName="exercises">
+                <column name="id" value="cdf98e33-5b98-465c-9b74-3376578ba816"/>
+                <column name="activity_id" value="7184eb2c-6c06-4219-837c-e1e8040bd727"/>
+                <column name="name" value="Multiple Container Search"/>
+                <column name="description" value="Search a larger array of containers for the odor."/>
+                <column name="difficulty" value="INTERMEDIATE"/>
+                <column name="instructions" value="Increase the number of containers and vary their arrangement. Reward committed indications on the correct one."/>
+                <column name="display_order" value="2"/>
+        </insert>
+        <insert tableName="exercises">
+                <column name="id" value="17a354d9-7672-4e9c-b313-eb4e49069484"/>
+                <column name="activity_id" value="7184eb2c-6c06-4219-837c-e1e8040bd727"/>
+                <column name="name" value="Elevated Container Search"/>
+                <column name="description" value="Search containers placed at different heights."/>
+                <column name="difficulty" value="ADVANCED"/>
+                <column name="instructions" value="Place some containers on low platforms or shelves. Reward the dog for searching all levels and indicating correctly."/>
+                <column name="display_order" value="3"/>
+        </insert>
+        <insert tableName="exercises">
+                <column name="id" value="1a5220b2-0dc6-4758-b49c-3b0ebe9e1f14"/>
+                <column name="activity_id" value="7840063e-8bd7-4f20-9744-4b9f6e14a2d6"/>
+                <column name="name" value="Vehicle Exterior Odor"/>
+                <column name="description" value="Find target odor placed on a vehicle exterior."/>
+                <column name="difficulty" value="INTERMEDIATE"/>
+                <column name="instructions" value="Hide the odor source on a vehicle exterior. Guide the dog around the vehicle, rewarding a clear indication at the source."/>
+                <column name="display_order" value="1"/>
+        </insert>
+        <insert tableName="exercises">
+                <column name="id" value="5d2a6b65-5d88-49ee-9973-631e3422a832"/>
+                <column name="activity_id" value="7840063e-8bd7-4f20-9744-4b9f6e14a2d6"/>
+                <column name="name" value="Open Area Search"/>
+                <column name="description" value="Search a larger outdoor area for the odor."/>
+                <column name="difficulty" value="ADVANCED"/>
+                <column name="instructions" value="Hide the odor source in an open outdoor area with wind and natural distractions. Reward a confident, committed indication."/>
+                <column name="display_order" value="2"/>
+        </insert>
+        <insert tableName="exercises">
+                <column name="id" value="5d7faa69-46e7-4198-b3d6-324e3d044fe6"/>
+                <column name="activity_id" value="b839b4a7-0d6f-4bd5-b867-2a9cc756630e"/>
+                <column name="name" value="Parallel Walking"/>
+                <column name="description" value="Walk calmly alongside another dog at a distance."/>
+                <column name="difficulty" value="BEGINNER"/>
+                <column name="instructions" value="Walk both dogs in parallel with plenty of distance between them. Reward calm behavior and gradually reduce the distance."/>
+                <column name="display_order" value="1"/>
+        </insert>
+        <insert tableName="exercises">
+                <column name="id" value="54d73c37-635d-4c56-b5c1-70f7d655c1ff"/>
+                <column name="activity_id" value="b839b4a7-0d6f-4bd5-b867-2a9cc756630e"/>
+                <column name="name" value="Controlled Greetings"/>
+                <column name="description" value="Greet another dog calmly on leash."/>
+                <column name="difficulty" value="INTERMEDIATE"/>
+                <column name="instructions" value="Allow a brief, calm greeting between two known dogs. Interrupt and reward if either dog becomes overexcited."/>
+                <column name="display_order" value="2"/>
+        </insert>
+        <insert tableName="exercises">
+                <column name="id" value="54ca776e-4998-4f5e-a253-cb8c6144c678"/>
+                <column name="activity_id" value="b839b4a7-0d6f-4bd5-b867-2a9cc756630e"/>
+                <column name="name" value="Play Break Recall"/>
+                <column name="description" value="Recall away from play with another dog."/>
+                <column name="difficulty" value="ADVANCED"/>
+                <column name="instructions" value="During a play session, cue a recall. Reward heavily for disengaging from play to come to the handler."/>
+                <column name="display_order" value="3"/>
+        </insert>
+        <insert tableName="exercises">
+                <column name="id" value="7274f7d9-8d89-4d82-8687-deb6bb459511"/>
+                <column name="activity_id" value="430fab6c-11f9-4bff-bfaf-918846303195"/>
+                <column name="name" value="Meeting Strangers"/>
+                <column name="description" value="Calmly meet an unfamiliar person."/>
+                <column name="difficulty" value="BEGINNER"/>
+                <column name="instructions" value="Have a stranger approach slowly and offer a hand to sniff. Reward calm, relaxed body language."/>
+                <column name="display_order" value="1"/>
+        </insert>
+        <insert tableName="exercises">
+                <column name="id" value="a5fbd9d3-7670-471b-a889-e52a881a2585"/>
+                <column name="activity_id" value="430fab6c-11f9-4bff-bfaf-918846303195"/>
+                <column name="name" value="Handling Desensitization"/>
+                <column name="description" value="Tolerate handling of paws, ears, and mouth."/>
+                <column name="difficulty" value="INTERMEDIATE"/>
+                <column name="instructions" value="Gently handle one body part at a time, pairing each touch with a reward. Increase duration gradually."/>
+                <column name="display_order" value="2"/>
+        </insert>
+        <insert tableName="exercises">
+                <column name="id" value="7968d984-5393-49a4-86e1-f70bf6a9adeb"/>
+                <column name="activity_id" value="430fab6c-11f9-4bff-bfaf-918846303195"/>
+                <column name="name" value="Calm Around Children"/>
+                <column name="description" value="Remain calm and gentle around children."/>
+                <column name="difficulty" value="ADVANCED"/>
+                <column name="instructions" value="With supervision, allow calm, structured interaction with children. Reward gentle, relaxed behavior throughout."/>
+                <column name="display_order" value="3"/>
+        </insert>
+    </changeSet>
+
+</databaseChangeLog>

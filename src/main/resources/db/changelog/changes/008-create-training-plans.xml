@@ -1,0 +1,40 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.29.xsd">
+
+    <changeSet id="008-create-training-plans" author="oskott">
+        <createTable tableName="training_plans">
+            <column name="id" type="UUID">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="dog_id" type="UUID">
+                <constraints nullable="false" foreignKeyName="fk_training_plans_dog" references="dogs(id)"/>
+            </column>
+            <column name="name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="VARCHAR(2048)"/>
+            <column name="start_date" type="DATE"/>
+            <column name="end_date" type="DATE"/>
+            <column name="status" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createIndex indexName="idx_training_plans_dog_id" tableName="training_plans">
+            <column name="dog_id"/>
+        </createIndex>
+
+        <addColumn tableName="training_sessions">
+            <column name="plan_id" type="UUID">
+                <constraints nullable="true" foreignKeyName="fk_training_sessions_plan" references="training_plans(id)"/>
+            </column>
+        </addColumn>
+        <createIndex indexName="idx_training_sessions_plan_id" tableName="training_sessions">
+            <column name="plan_id"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

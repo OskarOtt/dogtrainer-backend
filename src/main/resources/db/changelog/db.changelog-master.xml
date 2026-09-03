@@ -1,0 +1,18 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.29.xsd">
+
+    <include file="db/changelog/changes/001-create-users.xml" relativeToChangelogFile="false"/>
+    <include file="db/changelog/changes/002-create-refresh-tokens.xml" relativeToChangelogFile="false"/>
+    <include file="db/changelog/changes/003-create-dogs.xml" relativeToChangelogFile="false"/>
+    <include file="db/changelog/changes/004-create-training-catalog.xml" relativeToChangelogFile="false"/>
+    <include file="db/changelog/changes/005-seed-training-catalog.xml" relativeToChangelogFile="false"/>
+    <include file="db/changelog/changes/006-create-training-sessions.xml" relativeToChangelogFile="false"/>
+    <include file="db/changelog/changes/007-create-goals.xml" relativeToChangelogFile="false"/>
+    <include file="db/changelog/changes/008-create-training-plans.xml" relativeToChangelogFile="false"/>
+    <include file="db/changelog/changes/009-add-training-plan-exercises.xml" relativeToChangelogFile="false"/>
+
+</databaseChangeLog>
