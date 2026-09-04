@@ -95,6 +95,71 @@ class DogControllerIntegrationTest {
                 .andExpect(status().isNotFound());
     }
 
+    @Test
+    void reorderDogsChangesListOrderAndIsScopedToOwner() throws Exception {
+        String ownerAccessToken = registerAndGetAccessToken("owner-" + System.nanoTime() + "@example.com");
+        String otherAccessToken = registerAndGetAccessToken("other-" + System.nanoTime() + "@example.com");
+
+        String rexId = createDog(ownerAccessToken, "Rex").get("id").asString();
+        String fidoId = createDog(ownerAccessToken, "Fido").get("id").asString();
+        String maxId = createDog(ownerAccessToken, "Max").get("id").asString();
+        String otherDogId = createDog(otherAccessToken, "Buddy").get("id").asString();
+
+        // default order is creation order (oldest first)
+        JsonNode initialList = readBody(mockMvc.perform(get("/api/v1/dogs")
+                        .header("Authorization", "Bearer " + ownerAccessToken))
+                .andExpect(status().isOk()));
+        assertThat(idsOf(initialList)).containsExactly(rexId, fidoId, maxId);
+
+        // reorder: Max, Rex, Fido
+        JsonNode reordered = readBody(mockMvc.perform(put("/api/v1/dogs/order")
+                        .header("Authorization", "Bearer " + ownerAccessToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"dogIds\":[\"" + maxId + "\",\"" + rexId + "\",\"" + fidoId + "\"]}"))
+                .andExpect(status().isOk()));
+        assertThat(idsOf(reordered)).containsExactly(maxId, rexId, fidoId);
+
+        JsonNode listAfterReorder = readBody(mockMvc.perform(get("/api/v1/dogs")
+                        .header("Authorization", "Bearer " + ownerAccessToken))
+                .andExpect(status().isOk()));
+        assertThat(idsOf(listAfterReorder)).containsExactly(maxId, rexId, fidoId);
+
+        // missing a dog id (incomplete set) is rejected
+        mockMvc.perform(put("/api/v1/dogs/order")
+                        .header("Authorization", "Bearer " + ownerAccessToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"dogIds\":[\"" + maxId + "\",\"" + rexId + "\"]}"))
+                .andExpect(status().isConflict());
+
+        // including another user's dog id is rejected (cannot reorder dogs you don't own)
+        mockMvc.perform(put("/api/v1/dogs/order")
+                        .header("Authorization", "Bearer " + ownerAccessToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"dogIds\":[\"" + otherDogId + "\",\"" + rexId + "\",\"" + fidoId + "\",\"" + maxId + "\"]}"))
+                .andExpect(status().isConflict());
+
+        // the other user's own dog list/order is unaffected
+        JsonNode otherList = readBody(mockMvc.perform(get("/api/v1/dogs")
+                        .header("Authorization", "Bearer " + otherAccessToken))
+                .andExpect(status().isOk()));
+        assertThat(idsOf(otherList)).containsExactly(otherDogId);
+    }
+
+    private JsonNode createDog(String accessToken, String name) throws Exception {
+        String payload = "{\"name\":\"" + name + "\"}";
+        return readBody(mockMvc.perform(post("/api/v1/dogs")
+                        .header("Authorization", "Bearer " + accessToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(payload))
+                .andExpect(status().isCreated()));
+    }
+
+    private java.util.List<String> idsOf(JsonNode dogList) {
+        java.util.List<String> ids = new java.util.ArrayList<>();
+        dogList.forEach(node -> ids.add(node.get("id").asString()));
+        return ids;
+    }
+
     private String registerAndGetAccessToken(String email) throws Exception {
         RegisterRequest registerRequest = new RegisterRequest(email, "Test User", "SuperSecret123");
         JsonNode body = readBody(mockMvc.perform(post("/api/v1/auth/register")

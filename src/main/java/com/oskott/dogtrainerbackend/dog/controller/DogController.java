@@ -1,5 +1,6 @@
 package com.oskott.dogtrainerbackend.dog.controller;
 
+import com.oskott.dogtrainerbackend.dog.dto.DogReorderRequest;
 import com.oskott.dogtrainerbackend.dog.dto.DogRequest;
 import com.oskott.dogtrainerbackend.dog.dto.DogResponse;
 import com.oskott.dogtrainerbackend.dog.service.DogService;
@@ -46,6 +47,16 @@ public class DogController {
     @PutMapping("/{id}")
     public DogResponse updateDog(@PathVariable UUID id, @Valid @RequestBody DogRequest request) {
         return dogService.updateDog(id, request);
+    }
+
+    /**
+     * Reorders the current user's dogs. {@code dogIds[0]} becomes the top of the Dogs tab and
+     * the first dog used everywhere else in the app (train pick-dog, etc.), since every screen
+     * reads dogs via this same ordered list.
+     */
+    @PutMapping("/order")
+    public List<DogResponse> reorderDogs(@Valid @RequestBody DogReorderRequest request) {
+        return dogService.reorderDogs(request.dogIds());
     }
 
     @DeleteMapping("/{id}")

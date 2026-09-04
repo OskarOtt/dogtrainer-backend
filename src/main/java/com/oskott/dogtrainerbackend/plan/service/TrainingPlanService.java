@@ -63,7 +63,7 @@ public class TrainingPlanService {
     @Transactional(readOnly = true)
     public List<TrainingPlanResponse> listAllPlansForCurrentUser() {
         UUID ownerId = currentUserProvider.getCurrentUserId();
-        List<Dog> dogs = dogRepository.findAllByOwnerIdOrderByCreatedAtDesc(ownerId);
+        List<Dog> dogs = dogRepository.findAllByOwnerIdOrderBySortOrderAsc(ownerId);
         if (dogs.isEmpty()) {
             return Collections.emptyList();
         }

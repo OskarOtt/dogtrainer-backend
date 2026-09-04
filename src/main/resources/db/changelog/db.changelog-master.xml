@@ -14,5 +14,6 @@
     <include file="db/changelog/changes/007-create-goals.xml" relativeToChangelogFile="false"/>
     <include file="db/changelog/changes/008-create-training-plans.xml" relativeToChangelogFile="false"/>
     <include file="db/changelog/changes/009-add-training-plan-exercises.xml" relativeToChangelogFile="false"/>
+    <include file="db/changelog/changes/010-add-dogs-sort-order.xml" relativeToChangelogFile="false"/>
 
 </databaseChangeLog>

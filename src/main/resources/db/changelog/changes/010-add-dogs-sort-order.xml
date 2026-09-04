@@ -1,0 +1,32 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.29.xsd">
+
+    <changeSet id="010-add-dogs-sort-order" author="oskott">
+        <addColumn tableName="dogs">
+            <column name="sort_order" type="INT"/>
+        </addColumn>
+
+        <!-- Backfill: preserve the existing createdAt DESC display order (today's default)
+             as the initial sort_order per owner, so nothing visually reshuffles on deploy. -->
+        <!-- Correlated-subquery form (not "UPDATE ... FROM") so this works identically on
+             both H2 (test/local, PostgreSQL compatibility mode) and real PostgreSQL (prod). -->
+        <sql>
+            UPDATE dogs
+            SET sort_order = (
+                SELECT ranked.rank
+                FROM (
+                    SELECT id, ROW_NUMBER() OVER (PARTITION BY owner_id ORDER BY created_at DESC) - 1 AS rank
+                    FROM dogs
+                ) AS ranked
+                WHERE ranked.id = dogs.id
+            );
+        </sql>
+
+        <addNotNullConstraint tableName="dogs" columnName="sort_order" columnDataType="INT"/>
+    </changeSet>
+
+</databaseChangeLog>

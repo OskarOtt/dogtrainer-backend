@@ -38,6 +38,9 @@ public class Dog {
     @Column(name = "image_url")
     private String imageUrl;
 
+    @Column(name = "sort_order", nullable = false)
+    private int sortOrder;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
@@ -54,6 +57,7 @@ public class Dog {
             Sex sex,
             BigDecimal weight,
             String imageUrl,
+            int sortOrder,
             Instant createdAt
     ) {
         this.id = id;
@@ -64,6 +68,7 @@ public class Dog {
         this.sex = sex;
         this.weight = weight;
         this.imageUrl = imageUrl;
+        this.sortOrder = sortOrder;
         this.createdAt = createdAt;
     }
 
@@ -121,6 +126,14 @@ public class Dog {
 
     public void setImageUrl(String imageUrl) {
         this.imageUrl = imageUrl;
+    }
+
+    public int getSortOrder() {
+        return sortOrder;
+    }
+
+    public void setSortOrder(int sortOrder) {
+        this.sortOrder = sortOrder;
     }
 
     public Instant getCreatedAt() {

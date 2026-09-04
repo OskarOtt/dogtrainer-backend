@@ -1,6 +1,7 @@
 package com.oskott.dogtrainerbackend.dog.service;
 
 import com.oskott.dogtrainerbackend.common.exception.AccessDeniedForResourceException;
+import com.oskott.dogtrainerbackend.common.exception.BusinessRuleException;
 import com.oskott.dogtrainerbackend.common.exception.ResourceNotFoundException;
 import com.oskott.dogtrainerbackend.common.security.CurrentUserProvider;
 import com.oskott.dogtrainerbackend.dog.dto.DogRequest;
@@ -11,7 +12,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -28,7 +32,7 @@ public class DogService {
     @Transactional(readOnly = true)
     public List<DogResponse> listDogs() {
         UUID ownerId = currentUserProvider.getCurrentUserId();
-        return dogRepository.findAllByOwnerIdOrderByCreatedAtDesc(ownerId).stream()
+        return dogRepository.findAllByOwnerIdOrderBySortOrderAsc(ownerId).stream()
                 .map(DogResponse::from)
                 .toList();
     }
@@ -41,6 +45,9 @@ public class DogService {
     @Transactional
     public DogResponse createDog(DogRequest request) {
         UUID ownerId = currentUserProvider.getCurrentUserId();
+        int nextSortOrder = dogRepository.findTopByOwnerIdOrderBySortOrderDesc(ownerId)
+                .map(dog -> dog.getSortOrder() + 1)
+                .orElse(0);
         Dog dog = new Dog(
                 UUID.randomUUID(),
                 ownerId,
@@ -50,6 +57,7 @@ public class DogService {
                 request.sex(),
                 request.weight(),
                 request.imageUrl(),
+                nextSortOrder,
                 Instant.now()
         );
         dogRepository.save(dog);
@@ -72,6 +80,34 @@ public class DogService {
     public void deleteDog(UUID dogId) {
         Dog dog = getOwnedDog(dogId);
         dogRepository.delete(dog);
+    }
+
+    /**
+     * Reassigns sort order for all of the current user's dogs to match {@code orderedDogIds}
+     * (index 0 = top of the Dogs tab = first everywhere else in the app). The given list must
+     * contain exactly the same set of dog ids the user currently owns — no more, no fewer.
+     */
+    @Transactional
+    public List<DogResponse> reorderDogs(List<UUID> orderedDogIds) {
+        UUID ownerId = currentUserProvider.getCurrentUserId();
+        List<Dog> ownedDogs = dogRepository.findAllByOwnerIdOrderBySortOrderAsc(ownerId);
+
+        Set<UUID> ownedIds = ownedDogs.stream().map(Dog::getId).collect(java.util.stream.Collectors.toSet());
+        Set<UUID> requestedIds = Set.copyOf(orderedDogIds);
+        if (!ownedIds.equals(requestedIds) || orderedDogIds.size() != ownedDogs.size()) {
+            throw new BusinessRuleException("dogIds must contain exactly the current user's dogs, each exactly once");
+        }
+
+        Map<UUID, Dog> dogsById = new HashMap<>();
+        ownedDogs.forEach(dog -> dogsById.put(dog.getId(), dog));
+
+        for (int index = 0; index < orderedDogIds.size(); index++) {
+            dogsById.get(orderedDogIds.get(index)).setSortOrder(index);
+        }
+
+        return orderedDogIds.stream()
+                .map(id -> DogResponse.from(dogsById.get(id)))
+                .toList();
     }
 
     /**
