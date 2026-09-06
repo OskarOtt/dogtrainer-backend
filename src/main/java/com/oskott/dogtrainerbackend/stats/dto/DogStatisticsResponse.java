@@ -5,7 +5,7 @@ public record DogStatisticsResponse(
         long completedSessions,
         long totalTrainingMinutes,
         long sessionsThisWeek,
-        int currentStreakDays,
+        int currentStreakWeeks,
         double averageSuccessRate
 ) {
 }

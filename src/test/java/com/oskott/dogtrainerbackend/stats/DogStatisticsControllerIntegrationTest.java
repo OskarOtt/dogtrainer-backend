@@ -57,7 +57,7 @@ class DogStatisticsControllerIntegrationTest {
         assertThat(statistics.get("totalSessions").asInt()).isEqualTo(1);
         assertThat(statistics.get("completedSessions").asInt()).isEqualTo(1);
         assertThat(statistics.get("sessionsThisWeek").asInt()).isEqualTo(1);
-        assertThat(statistics.get("currentStreakDays").asInt()).isGreaterThanOrEqualTo(1);
+        assertThat(statistics.get("currentStreakWeeks").asInt()).isGreaterThanOrEqualTo(1);
         assertThat(statistics.get("averageSuccessRate").asDouble()).isEqualTo(0.5);
 
         JsonNode progress = readBody(mockMvc.perform(get("/api/v1/dogs/" + dogId + "/progress")

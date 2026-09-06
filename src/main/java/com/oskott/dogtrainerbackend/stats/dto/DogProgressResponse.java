@@ -8,7 +8,7 @@ public record DogProgressResponse(
         List<TrainingSessionResponse> history,
         long totalTrainingMinutes,
         double sessionsPerWeek,
-        int currentStreakDays,
+        int currentStreakWeeks,
         double averageSuccessRate,
         List<ExerciseProgressEntry> exerciseProgress
 ) {

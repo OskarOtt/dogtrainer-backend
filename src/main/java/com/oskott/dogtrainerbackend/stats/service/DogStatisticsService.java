@@ -21,6 +21,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
+import java.time.temporal.IsoFields;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
@@ -75,14 +76,14 @@ public class DogStatisticsService {
                 .toList();
         double averageSuccessRate = weightedSuccessRate(allExercises);
 
-        int currentStreakDays = computeStreakDays(completed);
+        int currentStreakWeeks = computeStreakWeeks(completed);
 
         return new DogStatisticsResponse(
                 sessions.size(),
                 completed.size(),
                 totalTrainingMinutes,
                 sessionsThisWeek,
-                currentStreakDays,
+                currentStreakWeeks,
                 averageSuccessRate
         );
     }
@@ -117,7 +118,7 @@ public class DogStatisticsService {
                 .toList();
         double averageSuccessRate = weightedSuccessRate(allExercises);
 
-        int currentStreakDays = computeStreakDays(completed);
+        int currentStreakWeeks = computeStreakWeeks(completed);
 
         List<ExerciseProgressEntry> exerciseProgress = buildExerciseProgress(completed, exercisesBySession);
 
@@ -125,7 +126,7 @@ public class DogStatisticsService {
                 history,
                 totalTrainingMinutes,
                 sessionsPerWeek,
-                currentStreakDays,
+                currentStreakWeeks,
                 averageSuccessRate,
                 exerciseProgress
         );
@@ -180,22 +181,37 @@ public class DogStatisticsService {
     }
 
     /**
-     * Counts consecutive days (ending today or yesterday) that had at least one completed
-     * training session. Training yesterday but not yet today still counts as an active streak.
+     * Counts consecutive weeks (ending this week or last week) that had at least one completed
+     * training session. Weeks follow the ISO week-based year/week-of-year definition, so a week
+     * runs Monday-Sunday. Training last week but not yet this week still counts as an active streak,
+     * since dog training isn't expected every single day.
      */
-    private int computeStreakDays(List<TrainingSession> completedSessions) {
-        Set<LocalDate> trainedDates = completedSessions.stream()
-                .map(s -> s.getStartedAt().atZone(ZoneOffset.UTC).toLocalDate())
+    private int computeStreakWeeks(List<TrainingSession> completedSessions) {
+        Set<WeekKey> trainedWeeks = completedSessions.stream()
+                .map(s -> weekKeyOf(s.getStartedAt().atZone(ZoneOffset.UTC).toLocalDate()))
                 .collect(Collectors.toSet());
 
         LocalDate today = LocalDate.now(ZoneOffset.UTC);
-        LocalDate cursor = trainedDates.contains(today) ? today : today.minusDays(1);
+        WeekKey currentWeek = weekKeyOf(today);
+        LocalDate cursor = trainedWeeks.contains(currentWeek) ? today : today.minusWeeks(1);
 
         int streak = 0;
-        while (trainedDates.contains(cursor)) {
+        WeekKey cursorWeek = weekKeyOf(cursor);
+        while (trainedWeeks.contains(cursorWeek)) {
             streak++;
-            cursor = cursor.minusDays(1);
+            cursor = cursor.minusWeeks(1);
+            cursorWeek = weekKeyOf(cursor);
         }
         return streak;
+    }
+
+    private WeekKey weekKeyOf(LocalDate date) {
+        return new WeekKey(
+                date.get(IsoFields.WEEK_BASED_YEAR),
+                date.get(IsoFields.WEEK_OF_WEEK_BASED_YEAR)
+        );
+    }
+
+    private record WeekKey(int weekBasedYear, int week) {
     }
 }
