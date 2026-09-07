@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dogtrainer-backend
+  labels:
+    app: dogtrainer-backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: dogtrainer-backend
+  template:
+    metadata:
+      labels:
+        app: dogtrainer-backend
+    spec:
+      imagePullSecrets:
+        - name: ghcr-secret
+      containers:
+        - name: dogtrainer-backend
+          # Image published by .github/workflows/deploy.yml on push to main
+          image: ghcr.io/oskarott/dogtrainer-backend:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: dogtrainer-backend-config
+            - secretRef:
+                name: dogtrainer-backend-secret
+          readinessProbe:
+            tcpSocket:
+              port: 8080
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: 8080
+            initialDelaySeconds: 40
+            periodSeconds: 20
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "512Mi"
+            limits:
+              cpu: "1"
+              memory: "1Gi"

@@ -1,0 +1,24 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: dogtrainer-backend
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+spec:
+  ingressClassName: traefik
+  tls:
+    - hosts:
+        - dogtrainer-api.oskott.com
+      secretName: dogtrainer-backend-tls
+  rules:
+    - host: dogtrainer-api.oskott.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: dogtrainer-backend
+                port:
+                  number: 8080

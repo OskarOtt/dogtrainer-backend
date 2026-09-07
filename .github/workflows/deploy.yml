@@ -1,0 +1,107 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build-and-deploy:
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+      # -------------------------
+      # 1. Get repository code
+      # -------------------------
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+
+      # -------------------------
+      # 2. Set up Java
+      # -------------------------
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+
+      # -------------------------
+      # 3. Build Java application
+      # -------------------------
+      - name: Build application
+        run: mvn -B clean package -DskipTests
+
+
+      # -------------------------
+      # 4. Log in to GHCR
+      # -------------------------
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+
+      # -------------------------
+      # 5. Build and push image
+      # -------------------------
+      - name: Extract Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=raw,value=latest
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+
+      # -------------------------
+      # 6. Copy Kubernetes files
+      # -------------------------
+      - name: Copy Kubernetes files to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          port: 2222
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: "k8s/*"
+          target: "/home/${{ secrets.SSH_USER }}/pipeline/dogtrainer-backend"
+
+
+      # -------------------------
+      # 7. Deploy to MicroK8s
+      # -------------------------
+      - name: Deploy application
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 2222
+          script: |
+            microk8s kubectl apply -f /home/${{ secrets.SSH_USER }}/pipeline/dogtrainer-backend/k8s
+
+            microk8s kubectl rollout restart deployment/dogtrainer-backend
+
+            microk8s kubectl rollout status deployment/dogtrainer-backend --timeout=120s
