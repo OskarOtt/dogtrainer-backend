@@ -2,12 +2,19 @@ package com.oskott.dogtrainerbackend.dog.service;
 
 import com.oskott.dogtrainerbackend.common.exception.AccessDeniedForResourceException;
 import com.oskott.dogtrainerbackend.common.exception.BusinessRuleException;
+import com.oskott.dogtrainerbackend.common.exception.InvalidFileException;
 import com.oskott.dogtrainerbackend.common.exception.ResourceNotFoundException;
 import com.oskott.dogtrainerbackend.common.security.CurrentUserProvider;
+import com.oskott.dogtrainerbackend.dog.dto.DogMediaConfirmRequest;
 import com.oskott.dogtrainerbackend.dog.dto.DogRequest;
 import com.oskott.dogtrainerbackend.dog.dto.DogResponse;
 import com.oskott.dogtrainerbackend.dog.entity.Dog;
+import com.oskott.dogtrainerbackend.dog.entity.DogMediaType;
 import com.oskott.dogtrainerbackend.dog.repository.DogRepository;
+import com.oskott.dogtrainerbackend.storage.MediaCategory;
+import com.oskott.dogtrainerbackend.storage.StorageService;
+import com.oskott.dogtrainerbackend.storage.dto.UploadUrlRequest;
+import com.oskott.dogtrainerbackend.storage.dto.UploadUrlResponse;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,10 +30,12 @@ public class DogService {
 
     private final DogRepository dogRepository;
     private final CurrentUserProvider currentUserProvider;
+    private final StorageService storageService;
 
-    public DogService(DogRepository dogRepository, CurrentUserProvider currentUserProvider) {
+    public DogService(DogRepository dogRepository, CurrentUserProvider currentUserProvider, StorageService storageService) {
         this.dogRepository = dogRepository;
         this.currentUserProvider = currentUserProvider;
+        this.storageService = storageService;
     }
 
     @Transactional(readOnly = true)
@@ -56,7 +65,8 @@ public class DogService {
                 request.birthDate(),
                 request.sex(),
                 request.weight(),
-                request.imageUrl(),
+                null,
+                null,
                 nextSortOrder,
                 Instant.now()
         );
@@ -72,7 +82,6 @@ public class DogService {
         dog.setBirthDate(request.birthDate());
         dog.setSex(request.sex());
         dog.setWeight(request.weight());
-        dog.setImageUrl(request.imageUrl());
         return DogResponse.from(dog);
     }
 
@@ -108,6 +117,46 @@ public class DogService {
         return orderedDogIds.stream()
                 .map(id -> DogResponse.from(dogsById.get(id)))
                 .toList();
+    }
+
+    public UploadUrlResponse createMediaUploadUrl(UUID dogId, UploadUrlRequest request) {
+        getOwnedDog(dogId);
+        MediaCategory category = MediaCategory.fromContentType(request.contentType())
+                .orElseThrow(() -> new InvalidFileException("Unsupported content type: " + request.contentType()));
+        return storageService.createUploadUrl(mediaKeyPrefix(dogId), category, request);
+    }
+
+    @Transactional
+    public DogResponse confirmMedia(UUID dogId, DogMediaConfirmRequest request) {
+        Dog dog = getOwnedDog(dogId);
+        String objectKey = request.objectKey();
+        if (!objectKey.startsWith(mediaKeyPrefix(dogId) + "/")) {
+            throw new AccessDeniedForResourceException("You do not have access to this object");
+        }
+        if (!storageService.objectExists(objectKey)) {
+            throw ResourceNotFoundException.forEntity("Object", objectKey);
+        }
+        String extension = objectKey.substring(objectKey.lastIndexOf('.') + 1);
+        DogMediaType mediaType = MediaCategory.fromExtension(extension)
+                .map(category -> category == MediaCategory.VIDEO ? DogMediaType.VIDEO : DogMediaType.IMAGE)
+                .orElseThrow(() -> new InvalidFileException("Unrecognized media file extension: " + extension));
+
+        storageService.deleteObjectIfPresent(storageService.extractObjectKey(dog.getMediaUrl()));
+        dog.setMediaUrl(storageService.buildPublicUrl(objectKey));
+        dog.setMediaType(mediaType);
+        return DogResponse.from(dog);
+    }
+
+    @Transactional
+    public void deleteMedia(UUID dogId) {
+        Dog dog = getOwnedDog(dogId);
+        storageService.deleteObjectIfPresent(storageService.extractObjectKey(dog.getMediaUrl()));
+        dog.setMediaUrl(null);
+        dog.setMediaType(null);
+    }
+
+    private String mediaKeyPrefix(UUID dogId) {
+        return "dogs/" + dogId;
     }
 
     /**

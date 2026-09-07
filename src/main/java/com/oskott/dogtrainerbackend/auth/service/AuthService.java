@@ -46,6 +46,7 @@ public class AuthService {
                 request.email().toLowerCase(),
                 request.name(),
                 passwordEncoder.encode(request.password()),
+                null,
                 Instant.now()
         );
         userRepository.save(user);

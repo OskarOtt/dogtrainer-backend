@@ -58,6 +58,6 @@ public class AuthController {
     public UserResponse me() {
         User user = userRepository.findById(currentUserProvider.getCurrentUserId())
                 .orElseThrow(() -> ResourceNotFoundException.forEntity("User", currentUserProvider.getCurrentUserId()));
-        return new UserResponse(user.getId(), user.getEmail(), user.getName(), user.getCreatedAt());
+        return UserResponse.from(user);
     }
 }

@@ -1,0 +1,18 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.29.xsd">
+
+    <changeSet id="012-add-dogs-media-type" author="oskott">
+        <renameColumn tableName="dogs" oldColumnName="image_url" newColumnName="media_url" columnDataType="VARCHAR(1024)"/>
+        <addColumn tableName="dogs">
+            <column name="media_type" type="VARCHAR(10)"/>
+        </addColumn>
+
+        <!-- Every media_url set before video support existed is an image. -->
+        <sql>UPDATE dogs SET media_type = 'IMAGE' WHERE media_url IS NOT NULL;</sql>
+    </changeSet>
+
+</databaseChangeLog>

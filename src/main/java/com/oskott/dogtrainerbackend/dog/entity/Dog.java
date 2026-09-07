@@ -35,8 +35,12 @@ public class Dog {
 
     private BigDecimal weight;
 
-    @Column(name = "image_url")
-    private String imageUrl;
+    @Column(name = "media_url")
+    private String mediaUrl;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "media_type")
+    private DogMediaType mediaType;
 
     @Column(name = "sort_order", nullable = false)
     private int sortOrder;
@@ -56,7 +60,8 @@ public class Dog {
             LocalDate birthDate,
             Sex sex,
             BigDecimal weight,
-            String imageUrl,
+            String mediaUrl,
+            DogMediaType mediaType,
             int sortOrder,
             Instant createdAt
     ) {
@@ -67,7 +72,8 @@ public class Dog {
         this.birthDate = birthDate;
         this.sex = sex;
         this.weight = weight;
-        this.imageUrl = imageUrl;
+        this.mediaUrl = mediaUrl;
+        this.mediaType = mediaType;
         this.sortOrder = sortOrder;
         this.createdAt = createdAt;
     }
@@ -120,12 +126,20 @@ public class Dog {
         this.weight = weight;
     }
 
-    public String getImageUrl() {
-        return imageUrl;
+    public String getMediaUrl() {
+        return mediaUrl;
     }
 
-    public void setImageUrl(String imageUrl) {
-        this.imageUrl = imageUrl;
+    public void setMediaUrl(String mediaUrl) {
+        this.mediaUrl = mediaUrl;
+    }
+
+    public DogMediaType getMediaType() {
+        return mediaType;
+    }
+
+    public void setMediaType(DogMediaType mediaType) {
+        this.mediaType = mediaType;
     }
 
     public int getSortOrder() {

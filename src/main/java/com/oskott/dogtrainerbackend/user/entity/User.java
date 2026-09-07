@@ -24,6 +24,9 @@ public class User {
     @Column(nullable = false)
     private String password;
 
+    @Column(name = "avatar_url")
+    private String avatarUrl;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
@@ -31,11 +34,12 @@ public class User {
         // JPA
     }
 
-    public User(UUID id, String email, String name, String password, Instant createdAt) {
+    public User(UUID id, String email, String name, String password, String avatarUrl, Instant createdAt) {
         this.id = id;
         this.email = email;
         this.name = name;
         this.password = password;
+        this.avatarUrl = avatarUrl;
         this.createdAt = createdAt;
     }
 
@@ -65,6 +69,14 @@ public class User {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public String getAvatarUrl() {
+        return avatarUrl;
+    }
+
+    public void setAvatarUrl(String avatarUrl) {
+        this.avatarUrl = avatarUrl;
     }
 
     public Instant getCreatedAt() {

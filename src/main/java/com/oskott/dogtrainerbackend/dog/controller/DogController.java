@@ -1,9 +1,12 @@
 package com.oskott.dogtrainerbackend.dog.controller;
 
+import com.oskott.dogtrainerbackend.dog.dto.DogMediaConfirmRequest;
 import com.oskott.dogtrainerbackend.dog.dto.DogReorderRequest;
 import com.oskott.dogtrainerbackend.dog.dto.DogRequest;
 import com.oskott.dogtrainerbackend.dog.dto.DogResponse;
 import com.oskott.dogtrainerbackend.dog.service.DogService;
+import com.oskott.dogtrainerbackend.storage.dto.UploadUrlRequest;
+import com.oskott.dogtrainerbackend.storage.dto.UploadUrlResponse;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -62,6 +65,22 @@ public class DogController {
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteDog(@PathVariable UUID id) {
         dogService.deleteDog(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{id}/media/upload-url")
+    public UploadUrlResponse createMediaUploadUrl(@PathVariable UUID id, @Valid @RequestBody UploadUrlRequest request) {
+        return dogService.createMediaUploadUrl(id, request);
+    }
+
+    @PutMapping("/{id}/media")
+    public DogResponse confirmMedia(@PathVariable UUID id, @Valid @RequestBody DogMediaConfirmRequest request) {
+        return dogService.confirmMedia(id, request);
+    }
+
+    @DeleteMapping("/{id}/media")
+    public ResponseEntity<Void> deleteMedia(@PathVariable UUID id) {
+        dogService.deleteMedia(id);
         return ResponseEntity.noContent().build();
     }
 }

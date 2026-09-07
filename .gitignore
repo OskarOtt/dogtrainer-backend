@@ -3,6 +3,7 @@ target/
 .mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
+src/main/resources/application-local.properties
 
 ### STS ###
 .apt_generated
@@ -15,6 +16,7 @@ target/
 
 ### IntelliJ IDEA ###
 .idea
+.serena
 *.iws
 *.iml
 *.ipr
@@ -31,3 +33,4 @@ build/
 
 ### VS Code ###
 .vscode/
+

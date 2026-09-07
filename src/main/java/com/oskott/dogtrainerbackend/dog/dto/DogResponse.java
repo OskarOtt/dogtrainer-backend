@@ -1,6 +1,7 @@
 package com.oskott.dogtrainerbackend.dog.dto;
 
 import com.oskott.dogtrainerbackend.dog.entity.Dog;
+import com.oskott.dogtrainerbackend.dog.entity.DogMediaType;
 import com.oskott.dogtrainerbackend.dog.entity.Sex;
 
 import java.math.BigDecimal;
@@ -15,7 +16,8 @@ public record DogResponse(
         LocalDate birthDate,
         Sex sex,
         BigDecimal weight,
-        String imageUrl,
+        String mediaUrl,
+        DogMediaType mediaType,
         Instant createdAt
 ) {
 
@@ -27,7 +29,8 @@ public record DogResponse(
                 dog.getBirthDate(),
                 dog.getSex(),
                 dog.getWeight(),
-                dog.getImageUrl(),
+                dog.getMediaUrl(),
+                dog.getMediaType(),
                 dog.getCreatedAt()
         );
     }

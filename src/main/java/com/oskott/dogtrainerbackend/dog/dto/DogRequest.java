@@ -15,7 +15,6 @@ public record DogRequest(
         @Size(max = 255) String breed,
         @PastOrPresent LocalDate birthDate,
         Sex sex,
-        @DecimalMin(value = "0.0", inclusive = false) @DecimalMax("999.99") BigDecimal weight,
-        @Size(max = 1024) String imageUrl
+        @DecimalMin(value = "0.0", inclusive = false) @DecimalMax("999.99") BigDecimal weight
 ) {
 }
