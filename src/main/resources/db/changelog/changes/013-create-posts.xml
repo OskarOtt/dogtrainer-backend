@@ -1,0 +1,36 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.29.xsd">
+
+    <changeSet id="013-create-posts" author="oskott">
+        <createTable tableName="posts">
+            <column name="id" type="UUID">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="author_id" type="UUID">
+                <constraints nullable="false" foreignKeyName="fk_posts_author" references="users(id)"/>
+            </column>
+            <column name="dog_id" type="UUID">
+                <constraints foreignKeyName="fk_posts_dog" references="dogs(id)"/>
+            </column>
+            <column name="training_session_id" type="UUID">
+                <constraints unique="true" foreignKeyName="fk_posts_training_session" references="training_sessions(id)"/>
+            </column>
+            <column name="content" type="VARCHAR(2048)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="image_url" type="VARCHAR(1024)"/>
+            <column name="created_at" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createIndex indexName="idx_posts_author_id" tableName="posts">
+            <column name="author_id"/>
+            <column name="created_at"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

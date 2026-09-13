@@ -8,6 +8,7 @@ import com.oskott.dogtrainerbackend.storage.StorageService;
 import com.oskott.dogtrainerbackend.storage.dto.UploadUrlRequest;
 import com.oskott.dogtrainerbackend.storage.dto.UploadUrlResponse;
 import com.oskott.dogtrainerbackend.user.dto.AvatarConfirmRequest;
+import com.oskott.dogtrainerbackend.user.dto.PublicUserResponse;
 import com.oskott.dogtrainerbackend.user.dto.UserResponse;
 import com.oskott.dogtrainerbackend.user.entity.User;
 import com.oskott.dogtrainerbackend.user.repository.UserRepository;
@@ -27,6 +28,13 @@ public class UserService {
         this.userRepository = userRepository;
         this.currentUserProvider = currentUserProvider;
         this.storageService = storageService;
+    }
+
+    @Transactional(readOnly = true)
+    public PublicUserResponse getUser(UUID userId) {
+        return userRepository.findById(userId)
+                .map(PublicUserResponse::from)
+                .orElseThrow(() -> ResourceNotFoundException.forEntity("User", userId));
     }
 
     public UploadUrlResponse createAvatarUploadUrl(UploadUrlRequest request) {
