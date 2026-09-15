@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.UUID;
@@ -32,6 +33,11 @@ public class UserController {
     @GetMapping("/{id}")
     public PublicUserResponse getUser(@PathVariable UUID id) {
         return userService.getUser(id);
+    }
+
+    @GetMapping(params = "email")
+    public PublicUserResponse getUserByEmail(@RequestParam String email) {
+        return userService.getUserByEmail(email);
     }
 
     @PostMapping("/me/avatar/upload-url")

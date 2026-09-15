@@ -37,6 +37,13 @@ public class UserService {
                 .orElseThrow(() -> ResourceNotFoundException.forEntity("User", userId));
     }
 
+    @Transactional(readOnly = true)
+    public PublicUserResponse getUserByEmail(String email) {
+        return userRepository.findByEmail(email)
+                .map(PublicUserResponse::from)
+                .orElseThrow(() -> ResourceNotFoundException.forEntity("User", email));
+    }
+
     public UploadUrlResponse createAvatarUploadUrl(UploadUrlRequest request) {
         UUID userId = currentUserProvider.getCurrentUserId();
         return storageService.createUploadUrl(avatarKeyPrefix(userId), MediaCategory.IMAGE, request);
