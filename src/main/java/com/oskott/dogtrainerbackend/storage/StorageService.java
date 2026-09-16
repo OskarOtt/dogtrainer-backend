@@ -8,8 +8,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import software.amazon.awssdk.core.exception.SdkException;
+import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
+import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.HeadObjectRequest;
 import software.amazon.awssdk.services.s3.model.NoSuchKeyException;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
@@ -30,15 +32,22 @@ import java.util.UUID;
 public class StorageService {
 
     private static final Logger log = LoggerFactory.getLogger(StorageService.class);
+    private static final String JPEG_CONTENT_TYPE = "image/jpeg";
 
     private final S3Presigner s3Presigner;
     private final S3Client s3Client;
     private final R2Properties properties;
+    private final ImageProcessingService imageProcessingService;
 
-    public StorageService(S3Presigner s3Presigner, S3Client s3Client, R2Properties properties) {
+    public StorageService(
+            S3Presigner s3Presigner,
+            S3Client s3Client,
+            R2Properties properties,
+            ImageProcessingService imageProcessingService) {
         this.s3Presigner = s3Presigner;
         this.s3Client = s3Client;
         this.properties = properties;
+        this.imageProcessingService = imageProcessingService;
     }
 
     public UploadUrlResponse createUploadUrl(String keyPrefix, MediaCategory category, UploadUrlRequest request) {
@@ -71,6 +80,54 @@ public class StorageService {
         return new UploadUrlResponse(presignedRequest.url().toString(), objectKey, Instant.now().plus(expiry));
     }
 
+    /**
+     * Downloads a client-uploaded image, downscales it to fit within {@code maxDimension} x
+     * {@code maxDimension} (keeping aspect ratio, never upscaling), and re-uploads it as a JPEG,
+     * replacing the original object. Returns the resulting object key (always {@code .jpg}).
+     *
+     * <p>If resizing fails (e.g. corrupt/unsupported image bytes), the original upload is deleted
+     * so no orphaned object is left in R2, and the failure propagates to the caller.
+     */
+    public String resizeStoredImage(String objectKey, int maxDimension) {
+        String resizedKey = withJpgExtension(objectKey);
+        try {
+            byte[] original = downloadObject(objectKey);
+            byte[] resized = imageProcessingService.resizeToJpeg(original, maxDimension, maxDimension);
+            uploadBytes(resizedKey, JPEG_CONTENT_TYPE, resized);
+        } catch (RuntimeException e) {
+            deleteObjectIfPresent(objectKey);
+            throw e;
+        }
+        if (!resizedKey.equals(objectKey)) {
+            deleteObjectIfPresent(objectKey);
+        }
+        return resizedKey;
+    }
+
+    private String withJpgExtension(String objectKey) {
+        int lastDot = objectKey.lastIndexOf('.');
+        String withoutExtension = lastDot >= 0 ? objectKey.substring(0, lastDot) : objectKey;
+        return withoutExtension + ".jpg";
+    }
+
+    private byte[] downloadObject(String objectKey) {
+        return s3Client.getObjectAsBytes(GetObjectRequest.builder()
+                        .bucket(properties.bucket())
+                        .key(objectKey)
+                        .build())
+                .asByteArray();
+    }
+
+    private void uploadBytes(String objectKey, String contentType, byte[] bytes) {
+        s3Client.putObject(
+                PutObjectRequest.builder()
+                        .bucket(properties.bucket())
+                        .key(objectKey)
+                        .contentType(contentType)
+                        .build(),
+                RequestBody.fromBytes(bytes));
+    }
+
     public boolean objectExists(String objectKey) {
         try {
             s3Client.headObject(HeadObjectRequest.builder()
@@ -94,7 +151,8 @@ public class StorageService {
 
     private String normalizedPublicBaseUrl() {
         String base = properties.publicBaseUrl();
-        return base.endsWith("/") ? base.substring(0, base.length() - 1) : base;
+        String withScheme = base.matches("(?i)^https?://.*") ? base : "https://" + base;
+        return withScheme.endsWith("/") ? withScheme.substring(0, withScheme.length() - 1) : withScheme;
     }
 
     /**

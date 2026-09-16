@@ -3,6 +3,7 @@ package com.oskott.dogtrainerbackend.user.service;
 import com.oskott.dogtrainerbackend.common.exception.AccessDeniedForResourceException;
 import com.oskott.dogtrainerbackend.common.exception.ResourceNotFoundException;
 import com.oskott.dogtrainerbackend.common.security.CurrentUserProvider;
+import com.oskott.dogtrainerbackend.storage.ImageProcessingService;
 import com.oskott.dogtrainerbackend.storage.MediaCategory;
 import com.oskott.dogtrainerbackend.storage.StorageService;
 import com.oskott.dogtrainerbackend.storage.dto.UploadUrlRequest;
@@ -57,8 +58,9 @@ public class UserService {
         if (!storageService.objectExists(objectKey)) {
             throw ResourceNotFoundException.forEntity("Object", objectKey);
         }
+        String resizedKey = storageService.resizeStoredImage(objectKey, ImageProcessingService.AVATAR_DOG_MAX_DIMENSION);
         storageService.deleteObjectIfPresent(storageService.extractObjectKey(user.getAvatarUrl()));
-        user.setAvatarUrl(storageService.buildPublicUrl(objectKey));
+        user.setAvatarUrl(storageService.buildPublicUrl(resizedKey));
         return UserResponse.from(user);
     }
 

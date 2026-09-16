@@ -11,6 +11,7 @@ import com.oskott.dogtrainerbackend.dog.dto.DogResponse;
 import com.oskott.dogtrainerbackend.dog.entity.Dog;
 import com.oskott.dogtrainerbackend.dog.entity.DogMediaType;
 import com.oskott.dogtrainerbackend.dog.repository.DogRepository;
+import com.oskott.dogtrainerbackend.storage.ImageProcessingService;
 import com.oskott.dogtrainerbackend.storage.MediaCategory;
 import com.oskott.dogtrainerbackend.storage.StorageService;
 import com.oskott.dogtrainerbackend.storage.dto.UploadUrlRequest;
@@ -141,8 +142,12 @@ public class DogService {
                 .map(category -> category == MediaCategory.VIDEO ? DogMediaType.VIDEO : DogMediaType.IMAGE)
                 .orElseThrow(() -> new InvalidFileException("Unrecognized media file extension: " + extension));
 
+        String finalObjectKey = mediaType == DogMediaType.IMAGE
+                ? storageService.resizeStoredImage(objectKey, ImageProcessingService.AVATAR_DOG_MAX_DIMENSION)
+                : objectKey;
+
         storageService.deleteObjectIfPresent(storageService.extractObjectKey(dog.getMediaUrl()));
-        dog.setMediaUrl(storageService.buildPublicUrl(objectKey));
+        dog.setMediaUrl(storageService.buildPublicUrl(finalObjectKey));
         dog.setMediaType(mediaType);
         return DogResponse.from(dog);
     }

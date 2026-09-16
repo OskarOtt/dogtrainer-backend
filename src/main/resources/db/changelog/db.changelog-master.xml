@@ -19,5 +19,6 @@
     <include file="db/changelog/changes/012-add-dogs-media-type.xml" relativeToChangelogFile="false"/>
     <include file="db/changelog/changes/013-create-posts.xml" relativeToChangelogFile="false"/>
     <include file="db/changelog/changes/014-create-follows.xml" relativeToChangelogFile="false"/>
+    <include file="db/changelog/changes/015-backfill-media-url-scheme.xml" relativeToChangelogFile="false"/>
 
 </databaseChangeLog>

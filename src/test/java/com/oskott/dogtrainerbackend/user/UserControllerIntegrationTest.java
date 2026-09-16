@@ -9,7 +9,10 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
+import software.amazon.awssdk.core.ResponseBytes;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.GetObjectRequest;
+import software.amazon.awssdk.services.s3.model.GetObjectResponse;
 import software.amazon.awssdk.services.s3.model.HeadObjectRequest;
 import software.amazon.awssdk.services.s3.model.HeadObjectResponse;
 import software.amazon.awssdk.services.s3.model.NoSuchKeyException;
@@ -19,6 +22,11 @@ import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignReques
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
+import javax.imageio.ImageIO;
+import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
@@ -70,12 +78,15 @@ class UserControllerIntegrationTest {
         assertThat(objectKey).endsWith(".png");
 
         when(s3Client.headObject(any(HeadObjectRequest.class))).thenReturn(HeadObjectResponse.builder().build());
+        when(s3Client.getObjectAsBytes(any(GetObjectRequest.class)))
+                .thenReturn(ResponseBytes.fromByteArray(GetObjectResponse.builder().build(), samplePngBytes()));
         JsonNode confirmed = readBody(mockMvc.perform(put("/api/v1/users/me/avatar")
                         .header("Authorization", "Bearer " + accessToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"objectKey\":\"" + objectKey + "\"}"))
                 .andExpect(status().isOk()));
-        assertThat(confirmed.get("avatarUrl").asString()).isEqualTo("https://dev-only-dummy.example.com/" + objectKey);
+        String resizedObjectKey = objectKey.substring(0, objectKey.lastIndexOf('.')) + ".jpg";
+        assertThat(confirmed.get("avatarUrl").asString()).isEqualTo("https://dev-only-dummy.example.com/" + resizedObjectKey);
 
         mockMvc.perform(delete("/api/v1/users/me/avatar")
                         .header("Authorization", "Bearer " + accessToken))
@@ -168,6 +179,20 @@ class UserControllerIntegrationTest {
         PresignedPutObjectRequest presignedRequest = mock(PresignedPutObjectRequest.class);
         when(presignedRequest.url()).thenReturn(URI.create(url).toURL());
         when(s3Presigner.presignPutObject(any(PutObjectPresignRequest.class))).thenReturn(presignedRequest);
+    }
+
+    private byte[] samplePngBytes() throws Exception {
+        BufferedImage image = new BufferedImage(200, 200, BufferedImage.TYPE_INT_RGB);
+        Graphics2D graphics = image.createGraphics();
+        try {
+            graphics.setColor(Color.BLUE);
+            graphics.fillRect(0, 0, 200, 200);
+        } finally {
+            graphics.dispose();
+        }
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        ImageIO.write(image, "png", out);
+        return out.toByteArray();
     }
 
     private String registerAndGetAccessToken(String email) throws Exception {

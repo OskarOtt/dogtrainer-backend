@@ -17,6 +17,7 @@ import com.oskott.dogtrainerbackend.post.dto.PostResponse;
 import com.oskott.dogtrainerbackend.post.entity.Post;
 import com.oskott.dogtrainerbackend.post.repository.PostRepository;
 import com.oskott.dogtrainerbackend.post.util.PostCursor;
+import com.oskott.dogtrainerbackend.storage.ImageProcessingService;
 import com.oskott.dogtrainerbackend.storage.MediaCategory;
 import com.oskott.dogtrainerbackend.storage.StorageService;
 import com.oskott.dogtrainerbackend.storage.dto.UploadUrlRequest;
@@ -136,8 +137,9 @@ public class PostService {
         if (!storageService.objectExists(objectKey)) {
             throw ResourceNotFoundException.forEntity("Object", objectKey);
         }
+        String resizedKey = storageService.resizeStoredImage(objectKey, ImageProcessingService.POST_MAX_DIMENSION);
         storageService.deleteObjectIfPresent(storageService.extractObjectKey(post.getImageUrl()));
-        post.setImageUrl(storageService.buildPublicUrl(objectKey));
+        post.setImageUrl(storageService.buildPublicUrl(resizedKey));
         return toResponse(post);
     }
 

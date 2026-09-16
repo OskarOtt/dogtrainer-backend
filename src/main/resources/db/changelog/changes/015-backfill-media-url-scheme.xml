@@ -1,0 +1,36 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.29.xsd">
+
+    <!-- Backfill: a previously misconfigured R2_PUBLIC_BASE_URL (missing the http(s):// scheme)
+         caused some already-persisted media URLs to be saved without a scheme, e.g.
+         "dogtrainer-media.oskott.com/avatars/.../file.jpg" instead of
+         "https://dogtrainer-media.oskott.com/avatars/.../file.jpg". StorageService now also
+         normalizes the scheme defensively for any newly-built URLs, but this one-time backfill
+         fixes rows written before that fix. -->
+    <changeSet id="015-backfill-media-url-scheme" author="oskott">
+        <sql>
+            UPDATE users
+            SET avatar_url = 'https://' || avatar_url
+            WHERE avatar_url IS NOT NULL
+              AND avatar_url NOT ILIKE 'http://%'
+              AND avatar_url NOT ILIKE 'https://%';
+
+            UPDATE dogs
+            SET media_url = 'https://' || media_url
+            WHERE media_url IS NOT NULL
+              AND media_url NOT ILIKE 'http://%'
+              AND media_url NOT ILIKE 'https://%';
+
+            UPDATE posts
+            SET image_url = 'https://' || image_url
+            WHERE image_url IS NOT NULL
+              AND image_url NOT ILIKE 'http://%'
+              AND image_url NOT ILIKE 'https://%';
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

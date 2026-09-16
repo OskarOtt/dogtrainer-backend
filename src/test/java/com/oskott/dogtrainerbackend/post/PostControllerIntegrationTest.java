@@ -9,7 +9,10 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
+import software.amazon.awssdk.core.ResponseBytes;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.GetObjectRequest;
+import software.amazon.awssdk.services.s3.model.GetObjectResponse;
 import software.amazon.awssdk.services.s3.model.HeadObjectRequest;
 import software.amazon.awssdk.services.s3.model.HeadObjectResponse;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
@@ -18,6 +21,11 @@ import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignReques
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
+import javax.imageio.ImageIO;
+import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
 import java.net.URI;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -224,6 +232,8 @@ class PostControllerIntegrationTest {
         assertThat(objectKey).startsWith("posts/" + postId + "/").endsWith(".jpg");
 
         when(s3Client.headObject(any(HeadObjectRequest.class))).thenReturn(HeadObjectResponse.builder().build());
+        when(s3Client.getObjectAsBytes(any(GetObjectRequest.class)))
+                .thenReturn(ResponseBytes.fromByteArray(GetObjectResponse.builder().build(), samplePngBytes()));
 
         JsonNode confirmed = readBody(mockMvc.perform(put("/api/v1/posts/" + postId + "/media")
                         .header("Authorization", "Bearer " + ownerToken)
@@ -238,6 +248,20 @@ class PostControllerIntegrationTest {
         mockMvc.perform(delete("/api/v1/posts/" + postId + "/media")
                         .header("Authorization", "Bearer " + ownerToken))
                 .andExpect(status().isNoContent());
+    }
+
+    private byte[] samplePngBytes() throws Exception {
+        BufferedImage image = new BufferedImage(200, 200, BufferedImage.TYPE_INT_RGB);
+        Graphics2D graphics = image.createGraphics();
+        try {
+            graphics.setColor(Color.BLUE);
+            graphics.fillRect(0, 0, 200, 200);
+        } finally {
+            graphics.dispose();
+        }
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        ImageIO.write(image, "png", out);
+        return out.toByteArray();
     }
 
     private String createStandalonePost(String accessToken, String content) throws Exception {
