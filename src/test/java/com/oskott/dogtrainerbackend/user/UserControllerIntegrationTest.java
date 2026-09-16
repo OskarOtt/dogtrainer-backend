@@ -20,12 +20,16 @@ import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -129,6 +133,35 @@ class UserControllerIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"objectKey\":\"avatars/someone-else/file.png\"}"))
                 .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void getUserReturnsPublicProfileWithoutEmailAndUnknownIdIs404() throws Exception {
+        String viewedToken = registerAndGetAccessToken("viewed-" + System.nanoTime() + "@example.com");
+        String viewerToken = registerAndGetAccessToken("viewer-" + System.nanoTime() + "@example.com");
+        String viewedUserId = userIdFromToken(viewedToken);
+
+        JsonNode profile = readBody(mockMvc.perform(get("/api/v1/users/" + viewedUserId)
+                        .header("Authorization", "Bearer " + viewerToken))
+                .andExpect(status().isOk()));
+        assertThat(profile.get("id").asString()).isEqualTo(viewedUserId);
+        assertThat(profile.get("name").asString()).isEqualTo("Test User");
+        assertThat(profile.has("email")).isFalse();
+
+        mockMvc.perform(get("/api/v1/users/" + UUID.randomUUID())
+                        .header("Authorization", "Bearer " + viewerToken))
+                .andExpect(status().isNotFound());
+    }
+
+    /**
+     * The access token's JWT "sub" claim is the user id (see JwtService). Decoding it locally
+     * avoids needing a round trip just to find out who we just registered.
+     */
+    private String userIdFromToken(String accessToken) {
+        String[] parts = accessToken.split("\\.");
+        byte[] payloadBytes = Base64.getUrlDecoder().decode(parts[1]);
+        JsonNode payload = objectMapper.readTree(new String(payloadBytes, StandardCharsets.UTF_8));
+        return payload.get("sub").asString();
     }
 
     private void stubPresignedUrl(String url) throws Exception {
