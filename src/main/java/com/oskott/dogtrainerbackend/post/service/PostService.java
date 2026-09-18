@@ -8,7 +8,10 @@ import com.oskott.dogtrainerbackend.common.security.CurrentUserProvider;
 import com.oskott.dogtrainerbackend.dog.entity.Dog;
 import com.oskott.dogtrainerbackend.dog.repository.DogRepository;
 import com.oskott.dogtrainerbackend.dog.service.DogService;
+import com.oskott.dogtrainerbackend.comment.service.CommentService;
 import com.oskott.dogtrainerbackend.follow.service.FollowService;
+import com.oskott.dogtrainerbackend.like.service.LikeService;
+import com.oskott.dogtrainerbackend.moderation.service.ModerationService;
 import com.oskott.dogtrainerbackend.post.dto.CreatePostFromSessionRequest;
 import com.oskott.dogtrainerbackend.post.dto.CreatePostRequest;
 import com.oskott.dogtrainerbackend.post.dto.PostMediaConfirmRequest;
@@ -37,6 +40,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -51,8 +55,11 @@ public class PostService {
     private final DogService dogService;
     private final TrainingSessionService trainingSessionService;
     private final FollowService followService;
+    private final ModerationService moderationService;
     private final CurrentUserProvider currentUserProvider;
     private final StorageService storageService;
+    private final LikeService likeService;
+    private final CommentService commentService;
 
     public PostService(
             PostRepository postRepository,
@@ -61,8 +68,11 @@ public class PostService {
             DogService dogService,
             TrainingSessionService trainingSessionService,
             FollowService followService,
+            ModerationService moderationService,
             CurrentUserProvider currentUserProvider,
-            StorageService storageService
+            StorageService storageService,
+            LikeService likeService,
+            CommentService commentService
     ) {
         this.postRepository = postRepository;
         this.userRepository = userRepository;
@@ -70,8 +80,11 @@ public class PostService {
         this.dogService = dogService;
         this.trainingSessionService = trainingSessionService;
         this.followService = followService;
+        this.moderationService = moderationService;
         this.currentUserProvider = currentUserProvider;
         this.storageService = storageService;
+        this.likeService = likeService;
+        this.commentService = commentService;
     }
 
     @Transactional
@@ -152,6 +165,11 @@ public class PostService {
 
     @Transactional(readOnly = true)
     public PostPageResponse listUserPosts(UUID userId, String cursor, Integer limit) {
+        UUID currentUserId = currentUserProvider.getCurrentUserId();
+        if (!currentUserId.equals(userId) && moderationService.isBlockedEitherWay(currentUserId, userId)) {
+            // Hide silently rather than 403 - a block should look like the user has no posts.
+            return new PostPageResponse(List.of(), null);
+        }
         int pageSize = pageSize(limit);
         List<Post> posts = postRepository.findPage(List.of(userId), cursorCreatedAt(cursor), cursorId(cursor), PageRequest.of(0, pageSize + 1));
         return toPage(posts, pageSize);
@@ -160,7 +178,9 @@ public class PostService {
     @Transactional(readOnly = true)
     public PostPageResponse getFeed(String cursor, Integer limit) {
         UUID currentUserId = currentUserProvider.getCurrentUserId();
+        List<UUID> blockedRelatedIds = moderationService.getRelatedBlockedUserIds(currentUserId);
         List<UUID> authorIds = new ArrayList<>(followService.getFollowingIds(currentUserId));
+        authorIds.removeAll(blockedRelatedIds);
         authorIds.add(currentUserId);
         int pageSize = pageSize(limit);
         List<Post> posts = postRepository.findPage(authorIds, cursorCreatedAt(cursor), cursorId(cursor), PageRequest.of(0, pageSize + 1));
@@ -189,6 +209,7 @@ public class PostService {
     private List<PostResponse> enrich(List<Post> posts) {
         List<UUID> authorIds = posts.stream().map(Post::getAuthorId).distinct().toList();
         List<UUID> dogIds = posts.stream().map(Post::getDogId).filter(Objects::nonNull).distinct().toList();
+        List<UUID> postIds = posts.stream().map(Post::getId).toList();
 
         Map<UUID, User> authorsById = new HashMap<>();
         userRepository.findAllById(authorIds).forEach(user -> authorsById.put(user.getId(), user));
@@ -196,7 +217,11 @@ public class PostService {
         Map<UUID, Dog> dogsById = new HashMap<>();
         dogRepository.findAllById(dogIds).forEach(dog -> dogsById.put(dog.getId(), dog));
 
-        return posts.stream().map(post -> toResponse(post, authorsById, dogsById)).toList();
+        Map<UUID, Long> likeCounts = likeService.countByPostIds(postIds);
+        Map<UUID, Long> commentCounts = commentService.countByPostIds(postIds);
+        Set<UUID> likedPostIds = likeService.likedPostIds(currentUserProvider.getCurrentUserId(), postIds);
+
+        return posts.stream().map(post -> toResponse(post, authorsById, dogsById, likeCounts, commentCounts, likedPostIds)).toList();
     }
 
     private PostResponse toResponse(Post post) {
@@ -206,10 +231,21 @@ public class PostService {
         if (post.getDogId() != null) {
             dogRepository.findById(post.getDogId()).ifPresent(dog -> dogsById.put(dog.getId(), dog));
         }
-        return toResponse(post, authorsById, dogsById);
+        List<UUID> postIds = List.of(post.getId());
+        Map<UUID, Long> likeCounts = likeService.countByPostIds(postIds);
+        Map<UUID, Long> commentCounts = commentService.countByPostIds(postIds);
+        Set<UUID> likedPostIds = likeService.likedPostIds(currentUserProvider.getCurrentUserId(), postIds);
+        return toResponse(post, authorsById, dogsById, likeCounts, commentCounts, likedPostIds);
     }
 
-    private PostResponse toResponse(Post post, Map<UUID, User> authorsById, Map<UUID, Dog> dogsById) {
+    private PostResponse toResponse(
+            Post post,
+            Map<UUID, User> authorsById,
+            Map<UUID, Dog> dogsById,
+            Map<UUID, Long> likeCounts,
+            Map<UUID, Long> commentCounts,
+            Set<UUID> likedPostIds
+    ) {
         User author = authorsById.get(post.getAuthorId());
         Dog dog = post.getDogId() != null ? dogsById.get(post.getDogId()) : null;
         return new PostResponse(
@@ -222,7 +258,10 @@ public class PostService {
                 post.getTrainingSessionId(),
                 post.getContent(),
                 post.getImageUrl(),
-                post.getCreatedAt()
+                post.getCreatedAt(),
+                likeCounts.getOrDefault(post.getId(), 0L),
+                commentCounts.getOrDefault(post.getId(), 0L),
+                likedPostIds.contains(post.getId())
         );
     }
 

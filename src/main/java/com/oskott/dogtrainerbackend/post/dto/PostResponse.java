@@ -13,6 +13,9 @@ public record PostResponse(
         UUID trainingSessionId,
         String content,
         String imageUrl,
-        Instant createdAt
+        Instant createdAt,
+        long likeCount,
+        long commentCount,
+        boolean likedByMe
 ) {
 }
