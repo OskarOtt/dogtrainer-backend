@@ -3,6 +3,7 @@ package com.oskott.dogtrainerbackend.user.controller;
 import com.oskott.dogtrainerbackend.storage.dto.UploadUrlRequest;
 import com.oskott.dogtrainerbackend.storage.dto.UploadUrlResponse;
 import com.oskott.dogtrainerbackend.user.dto.AvatarConfirmRequest;
+import com.oskott.dogtrainerbackend.user.dto.DeleteAccountRequest;
 import com.oskott.dogtrainerbackend.user.dto.PublicUserResponse;
 import com.oskott.dogtrainerbackend.user.dto.UserResponse;
 import com.oskott.dogtrainerbackend.user.service.UserService;
@@ -53,6 +54,12 @@ public class UserController {
     @DeleteMapping("/me/avatar")
     public ResponseEntity<Void> deleteAvatar() {
         userService.deleteAvatar();
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/me")
+    public ResponseEntity<Void> deleteAccount(@Valid @RequestBody DeleteAccountRequest request) {
+        userService.deleteAccount(request.password());
         return ResponseEntity.noContent().build();
     }
 }

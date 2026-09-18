@@ -1,0 +1,109 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.29.xsd">
+
+    <!--
+        Supports account deletion: users are anonymized in place (see UserService.deleteAccount)
+        rather than removed, so posts stay attributable to "Deleted User". Everything private to
+        the account (dogs and everything hanging off a dog, follows, refresh tokens) is instead
+        hard-deleted via DB cascade so the service layer only has to delete the dogs and follows;
+        the rest falls out automatically. Posts survive but lose their dog/session references.
+    -->
+    <changeSet id="016-add-users-deleted-at" author="oskott">
+        <addColumn tableName="users">
+            <column name="deleted_at" type="TIMESTAMP WITH TIME ZONE"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="016-cascade-dogs-owner" author="oskott">
+        <dropForeignKeyConstraint baseTableName="dogs" constraintName="fk_dogs_owner"/>
+        <addForeignKeyConstraint baseTableName="dogs" baseColumnNames="owner_id"
+                                  constraintName="fk_dogs_owner"
+                                  referencedTableName="users" referencedColumnNames="id"
+                                  onDelete="CASCADE"/>
+    </changeSet>
+
+    <changeSet id="016-cascade-goals-dog" author="oskott">
+        <dropForeignKeyConstraint baseTableName="goals" constraintName="fk_goals_dog"/>
+        <addForeignKeyConstraint baseTableName="goals" baseColumnNames="dog_id"
+                                  constraintName="fk_goals_dog"
+                                  referencedTableName="dogs" referencedColumnNames="id"
+                                  onDelete="CASCADE"/>
+    </changeSet>
+
+    <changeSet id="016-cascade-training-sessions-dog" author="oskott">
+        <dropForeignKeyConstraint baseTableName="training_sessions" constraintName="fk_training_sessions_dog"/>
+        <addForeignKeyConstraint baseTableName="training_sessions" baseColumnNames="dog_id"
+                                  constraintName="fk_training_sessions_dog"
+                                  referencedTableName="dogs" referencedColumnNames="id"
+                                  onDelete="CASCADE"/>
+    </changeSet>
+
+    <changeSet id="016-cascade-session-exercises-session" author="oskott">
+        <dropForeignKeyConstraint baseTableName="session_exercises" constraintName="fk_session_exercises_session"/>
+        <addForeignKeyConstraint baseTableName="session_exercises" baseColumnNames="session_id"
+                                  constraintName="fk_session_exercises_session"
+                                  referencedTableName="training_sessions" referencedColumnNames="id"
+                                  onDelete="CASCADE"/>
+    </changeSet>
+
+    <changeSet id="016-cascade-training-plans-dog" author="oskott">
+        <dropForeignKeyConstraint baseTableName="training_plans" constraintName="fk_training_plans_dog"/>
+        <addForeignKeyConstraint baseTableName="training_plans" baseColumnNames="dog_id"
+                                  constraintName="fk_training_plans_dog"
+                                  referencedTableName="dogs" referencedColumnNames="id"
+                                  onDelete="CASCADE"/>
+    </changeSet>
+
+    <changeSet id="016-cascade-training-plan-exercises-plan" author="oskott">
+        <dropForeignKeyConstraint baseTableName="training_plan_exercises" constraintName="fk_training_plan_exercises_plan"/>
+        <addForeignKeyConstraint baseTableName="training_plan_exercises" baseColumnNames="plan_id"
+                                  constraintName="fk_training_plan_exercises_plan"
+                                  referencedTableName="training_plans" referencedColumnNames="id"
+                                  onDelete="CASCADE"/>
+    </changeSet>
+
+    <changeSet id="016-cascade-refresh-tokens-user" author="oskott">
+        <dropForeignKeyConstraint baseTableName="refresh_tokens" constraintName="fk_refresh_tokens_user"/>
+        <addForeignKeyConstraint baseTableName="refresh_tokens" baseColumnNames="user_id"
+                                  constraintName="fk_refresh_tokens_user"
+                                  referencedTableName="users" referencedColumnNames="id"
+                                  onDelete="CASCADE"/>
+    </changeSet>
+
+    <changeSet id="016-cascade-follows-follower" author="oskott">
+        <dropForeignKeyConstraint baseTableName="follows" constraintName="fk_follows_follower"/>
+        <addForeignKeyConstraint baseTableName="follows" baseColumnNames="follower_id"
+                                  constraintName="fk_follows_follower"
+                                  referencedTableName="users" referencedColumnNames="id"
+                                  onDelete="CASCADE"/>
+    </changeSet>
+
+    <changeSet id="016-cascade-follows-followee" author="oskott">
+        <dropForeignKeyConstraint baseTableName="follows" constraintName="fk_follows_followee"/>
+        <addForeignKeyConstraint baseTableName="follows" baseColumnNames="followee_id"
+                                  constraintName="fk_follows_followee"
+                                  referencedTableName="users" referencedColumnNames="id"
+                                  onDelete="CASCADE"/>
+    </changeSet>
+
+    <changeSet id="016-setnull-posts-dog" author="oskott">
+        <dropForeignKeyConstraint baseTableName="posts" constraintName="fk_posts_dog"/>
+        <addForeignKeyConstraint baseTableName="posts" baseColumnNames="dog_id"
+                                  constraintName="fk_posts_dog"
+                                  referencedTableName="dogs" referencedColumnNames="id"
+                                  onDelete="SET NULL"/>
+    </changeSet>
+
+    <changeSet id="016-setnull-posts-training-session" author="oskott">
+        <dropForeignKeyConstraint baseTableName="posts" constraintName="fk_posts_training_session"/>
+        <addForeignKeyConstraint baseTableName="posts" baseColumnNames="training_session_id"
+                                  constraintName="fk_posts_training_session"
+                                  referencedTableName="training_sessions" referencedColumnNames="id"
+                                  onDelete="SET NULL"/>
+    </changeSet>
+
+</databaseChangeLog>

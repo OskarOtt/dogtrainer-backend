@@ -9,6 +9,7 @@ import com.oskott.dogtrainerbackend.dog.entity.Dog;
 import com.oskott.dogtrainerbackend.dog.repository.DogRepository;
 import com.oskott.dogtrainerbackend.dog.service.DogService;
 import com.oskott.dogtrainerbackend.follow.service.FollowService;
+import com.oskott.dogtrainerbackend.moderation.service.ModerationService;
 import com.oskott.dogtrainerbackend.post.dto.CreatePostFromSessionRequest;
 import com.oskott.dogtrainerbackend.post.dto.CreatePostRequest;
 import com.oskott.dogtrainerbackend.post.dto.PostMediaConfirmRequest;
@@ -51,6 +52,7 @@ public class PostService {
     private final DogService dogService;
     private final TrainingSessionService trainingSessionService;
     private final FollowService followService;
+    private final ModerationService moderationService;
     private final CurrentUserProvider currentUserProvider;
     private final StorageService storageService;
 
@@ -61,6 +63,7 @@ public class PostService {
             DogService dogService,
             TrainingSessionService trainingSessionService,
             FollowService followService,
+            ModerationService moderationService,
             CurrentUserProvider currentUserProvider,
             StorageService storageService
     ) {
@@ -70,6 +73,7 @@ public class PostService {
         this.dogService = dogService;
         this.trainingSessionService = trainingSessionService;
         this.followService = followService;
+        this.moderationService = moderationService;
         this.currentUserProvider = currentUserProvider;
         this.storageService = storageService;
     }
@@ -152,6 +156,11 @@ public class PostService {
 
     @Transactional(readOnly = true)
     public PostPageResponse listUserPosts(UUID userId, String cursor, Integer limit) {
+        UUID currentUserId = currentUserProvider.getCurrentUserId();
+        if (!currentUserId.equals(userId) && moderationService.isBlockedEitherWay(currentUserId, userId)) {
+            // Hide silently rather than 403 - a block should look like the user has no posts.
+            return new PostPageResponse(List.of(), null);
+        }
         int pageSize = pageSize(limit);
         List<Post> posts = postRepository.findPage(List.of(userId), cursorCreatedAt(cursor), cursorId(cursor), PageRequest.of(0, pageSize + 1));
         return toPage(posts, pageSize);
@@ -160,7 +169,9 @@ public class PostService {
     @Transactional(readOnly = true)
     public PostPageResponse getFeed(String cursor, Integer limit) {
         UUID currentUserId = currentUserProvider.getCurrentUserId();
+        List<UUID> blockedRelatedIds = moderationService.getRelatedBlockedUserIds(currentUserId);
         List<UUID> authorIds = new ArrayList<>(followService.getFollowingIds(currentUserId));
+        authorIds.removeAll(blockedRelatedIds);
         authorIds.add(currentUserId);
         int pageSize = pageSize(limit);
         List<Post> posts = postRepository.findPage(authorIds, cursorCreatedAt(cursor), cursorId(cursor), PageRequest.of(0, pageSize + 1));

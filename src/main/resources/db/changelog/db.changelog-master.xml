@@ -20,5 +20,8 @@
     <include file="db/changelog/changes/013-create-posts.xml" relativeToChangelogFile="false"/>
     <include file="db/changelog/changes/014-create-follows.xml" relativeToChangelogFile="false"/>
     <include file="db/changelog/changes/015-backfill-media-url-scheme.xml" relativeToChangelogFile="false"/>
+    <include file="db/changelog/changes/016-user-deletion-support.xml" relativeToChangelogFile="false"/>
+    <include file="db/changelog/changes/017-create-reports.xml" relativeToChangelogFile="false"/>
+    <include file="db/changelog/changes/018-create-blocks.xml" relativeToChangelogFile="false"/>
 
 </databaseChangeLog>
