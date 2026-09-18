@@ -23,5 +23,7 @@
     <include file="db/changelog/changes/016-user-deletion-support.xml" relativeToChangelogFile="false"/>
     <include file="db/changelog/changes/017-create-reports.xml" relativeToChangelogFile="false"/>
     <include file="db/changelog/changes/018-create-blocks.xml" relativeToChangelogFile="false"/>
+    <include file="db/changelog/changes/019-create-post-likes.xml" relativeToChangelogFile="false"/>
+    <include file="db/changelog/changes/020-create-post-comments.xml" relativeToChangelogFile="false"/>
 
 </databaseChangeLog>
