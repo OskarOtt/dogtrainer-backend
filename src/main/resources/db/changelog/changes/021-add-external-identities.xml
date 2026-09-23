@@ -1,0 +1,52 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.29.xsd">
+
+    <changeSet id="021-allow-passwordless-users" author="copilot">
+        <dropNotNullConstraint tableName="users" columnName="password" columnDataType="VARCHAR(255)"/>
+    </changeSet>
+
+    <changeSet id="021-create-external-identities" author="copilot">
+        <createTable tableName="external_identities">
+            <column name="id" type="UUID">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="user_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="provider" type="VARCHAR(32)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="provider_subject" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="provider_email" type="VARCHAR(255)"/>
+            <column name="created_at" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint baseTableName="external_identities"
+                                 baseColumnNames="user_id"
+                                 constraintName="fk_external_identities_user"
+                                 referencedTableName="users"
+                                 referencedColumnNames="id"
+                                 onDelete="CASCADE"/>
+        <addUniqueConstraint tableName="external_identities"
+                             columnNames="provider, provider_subject"
+                             constraintName="uc_external_identity_provider_subject"/>
+        <addUniqueConstraint tableName="external_identities"
+                             columnNames="user_id, provider"
+                             constraintName="uc_external_identity_user_provider"/>
+        <createIndex indexName="idx_external_identities_user_id" tableName="external_identities">
+            <column name="user_id"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

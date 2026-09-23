@@ -6,3 +6,6 @@ metadata:
     app: dogtrainer-backend
 data:
   SPRING_PROFILES_ACTIVE: "prod"
+  APPLE_CLIENT_IDS: "com.oskar.ott.dogtrainerapp"
+  APPLE_CLIENT_ID: "com.oskar.ott.dogtrainerapp"
+  AUTH_REAUTH_MAX_AGE_SECONDS: "300"

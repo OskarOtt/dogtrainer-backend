@@ -11,6 +11,13 @@ spring.liquibase.enabled=true
 
 JWT_SECRET=dev-only-dummy-secret-0123456789abcdef
 
+# Social sign-in. Apple private key accepts PEM text with newlines escaped as \n.
+APPLE_CLIENT_IDS=com.oskar.ott.dogtrainerapp
+APPLE_CLIENT_ID=com.oskar.ott.dogtrainerapp
+APPLE_TEAM_ID=your-apple-team-id
+APPLE_KEY_ID=your-apple-sign-in-key-id
+APPLE_PRIVATE_KEY=
+
 # Dummy R2 values so the app boots without real Cloudflare credentials.
 # Override with real values (see README) to actually exercise upload endpoints locally.
 R2_ENDPOINT=https://dev-only-dummy.r2.cloudflarestorage.com
