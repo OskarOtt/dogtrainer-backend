@@ -21,7 +21,7 @@ public class User {
     @Column(nullable = false)
     private String name;
 
-    @Column(nullable = false)
+    @Column
     private String password;
 
     @Column(name = "avatar_url")
@@ -68,6 +68,10 @@ public class User {
 
     public String getPassword() {
         return password;
+    }
+
+    public boolean hasPassword() {
+        return password != null;
     }
 
     public void setPassword(String password) {

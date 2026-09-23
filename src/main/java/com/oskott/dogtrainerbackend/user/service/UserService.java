@@ -1,6 +1,14 @@
 package com.oskott.dogtrainerbackend.user.service;
 
+import com.oskott.dogtrainerbackend.auth.dto.AuthMethod;
+import com.oskott.dogtrainerbackend.auth.entity.ExternalAuthProvider;
+import com.oskott.dogtrainerbackend.auth.entity.ExternalIdentity;
+import com.oskott.dogtrainerbackend.auth.repository.ExternalIdentityRepository;
 import com.oskott.dogtrainerbackend.auth.repository.RefreshTokenRepository;
+import com.oskott.dogtrainerbackend.auth.service.AppleTokenRevoker;
+import com.oskott.dogtrainerbackend.auth.service.ExternalIdentityVerifier;
+import com.oskott.dogtrainerbackend.auth.service.VerifiedExternalIdentity;
+import com.oskott.dogtrainerbackend.common.exception.AuthFlowException;
 import com.oskott.dogtrainerbackend.common.exception.AccessDeniedForResourceException;
 import com.oskott.dogtrainerbackend.common.exception.AuthenticationFailedException;
 import com.oskott.dogtrainerbackend.common.exception.ResourceNotFoundException;
@@ -14,11 +22,14 @@ import com.oskott.dogtrainerbackend.storage.StorageService;
 import com.oskott.dogtrainerbackend.storage.dto.UploadUrlRequest;
 import com.oskott.dogtrainerbackend.storage.dto.UploadUrlResponse;
 import com.oskott.dogtrainerbackend.user.dto.AvatarConfirmRequest;
+import com.oskott.dogtrainerbackend.user.dto.DeleteAccountRequest;
 import com.oskott.dogtrainerbackend.user.dto.PublicUserResponse;
 import com.oskott.dogtrainerbackend.user.dto.UserResponse;
 import com.oskott.dogtrainerbackend.user.entity.User;
 import com.oskott.dogtrainerbackend.user.repository.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,6 +47,10 @@ public class UserService {
     private final FollowRepository followRepository;
     private final RefreshTokenRepository refreshTokenRepository;
     private final PasswordEncoder passwordEncoder;
+    private final ExternalIdentityRepository externalIdentityRepository;
+    private final ExternalIdentityVerifier externalIdentityVerifier;
+    private final AppleTokenRevoker appleTokenRevoker;
+    private final long reauthenticationMaxAgeSeconds;
 
     public UserService(
             UserRepository userRepository,
@@ -44,7 +59,11 @@ public class UserService {
             DogRepository dogRepository,
             FollowRepository followRepository,
             RefreshTokenRepository refreshTokenRepository,
-            PasswordEncoder passwordEncoder
+            PasswordEncoder passwordEncoder,
+            ExternalIdentityRepository externalIdentityRepository,
+            ExternalIdentityVerifier externalIdentityVerifier,
+            AppleTokenRevoker appleTokenRevoker,
+            @Value("${app.auth.reauthentication-max-age-seconds:300}") long reauthenticationMaxAgeSeconds
     ) {
         this.userRepository = userRepository;
         this.currentUserProvider = currentUserProvider;
@@ -53,6 +72,10 @@ public class UserService {
         this.followRepository = followRepository;
         this.refreshTokenRepository = refreshTokenRepository;
         this.passwordEncoder = passwordEncoder;
+        this.externalIdentityRepository = externalIdentityRepository;
+        this.externalIdentityVerifier = externalIdentityVerifier;
+        this.appleTokenRevoker = appleTokenRevoker;
+        this.reauthenticationMaxAgeSeconds = reauthenticationMaxAgeSeconds;
     }
 
     @Transactional(readOnly = true)
@@ -85,7 +108,7 @@ public class UserService {
         String resizedKey = storageService.resizeStoredImage(objectKey, ImageProcessingService.AVATAR_DOG_MAX_DIMENSION);
         storageService.deleteObjectIfPresent(storageService.extractObjectKey(user.getAvatarUrl()));
         user.setAvatarUrl(storageService.buildPublicUrl(resizedKey));
-        return UserResponse.from(user);
+        return UserResponse.from(user, externalIdentityRepository.findAllByUserId(user.getId()));
     }
 
     @Transactional
@@ -95,18 +118,10 @@ public class UserService {
         user.setAvatarUrl(null);
     }
 
-    /**
-     * Soft-deletes the account: the user row is kept (anonymized) rather than removed so posts
-     * stay attributable to "Deleted User", but everything private to the account - dogs and
-     * everything hanging off a dog (goals, training sessions/plans), follows, refresh tokens - is
-     * hard-deleted. Requires the current password as a safety check.
-     */
     @Transactional
-    public void deleteAccount(String password) {
+    public void deleteAccount(DeleteAccountRequest request) {
         User user = getCurrentUser();
-        if (!passwordEncoder.matches(password, user.getPassword())) {
-            throw new AuthenticationFailedException("Incorrect password");
-        }
+        verifyDeletion(request, user);
         UUID userId = user.getId();
 
         List<Dog> dogs = dogRepository.findAllByOwnerIdOrderBySortOrderAsc(userId);
@@ -118,6 +133,7 @@ public class UserService {
         followRepository.deleteAll(followRepository.findAllByFollowerIdOrderByCreatedAtDesc(userId));
         followRepository.deleteAll(followRepository.findAllByFolloweeIdOrderByCreatedAtDesc(userId));
         refreshTokenRepository.deleteByUserId(userId);
+        externalIdentityRepository.deleteByUserId(userId);
         storageService.deleteObjectIfPresent(storageService.extractObjectKey(user.getAvatarUrl()));
 
         user.setEmail("deleted-" + userId + "@deleted.dogtrainer.app");
@@ -125,6 +141,50 @@ public class UserService {
         user.setPassword(passwordEncoder.encode(UUID.randomUUID().toString()));
         user.setAvatarUrl(null);
         user.setDeletedAt(Instant.now());
+    }
+
+    private void verifyDeletion(DeleteAccountRequest request, User user) {
+        AuthMethod method = request.method() == null && request.password() != null
+                ? AuthMethod.PASSWORD
+                : request.method();
+        if (method == null) {
+            throw new AuthFlowException(
+                    HttpStatus.BAD_REQUEST,
+                    "DELETION_CONFIRMATION_REQUIRED",
+                    "Choose a sign-in method to confirm account deletion"
+            );
+        }
+        if (method == AuthMethod.PASSWORD) {
+            if (!user.hasPassword()
+                    || request.password() == null
+                    || !passwordEncoder.matches(request.password(), user.getPassword())) {
+                throw new AuthenticationFailedException("Incorrect password");
+            }
+            return;
+        }
+        if (request.idToken() == null || request.idToken().isBlank()) {
+            throw new AuthenticationFailedException("Fresh provider authentication is required");
+        }
+
+        ExternalAuthProvider provider = ExternalAuthProvider.valueOf(method.name());
+        VerifiedExternalIdentity verified = externalIdentityVerifier.verify(provider, request.idToken());
+        Instant oldestAccepted = Instant.now().minusSeconds(reauthenticationMaxAgeSeconds);
+        if (verified.issuedAt() == null || verified.issuedAt().isBefore(oldestAccepted)) {
+            throw new AuthenticationFailedException("Provider authentication is too old");
+        }
+        ExternalIdentity identity = externalIdentityRepository
+                .findByProviderAndProviderSubject(provider, verified.subject())
+                .filter(candidate -> candidate.getUser().getId().equals(user.getId()))
+                .orElseThrow(() -> new AuthenticationFailedException(
+                        "Provider account is not linked to this user"
+                ));
+
+        if (identity.getProvider() == ExternalAuthProvider.APPLE) {
+            if (request.authorizationCode() == null || request.authorizationCode().isBlank()) {
+                throw new AuthenticationFailedException("Apple authorization code is required");
+            }
+            appleTokenRevoker.revoke(request.authorizationCode(), verified.subject());
+        }
     }
 
     private User getCurrentUser() {

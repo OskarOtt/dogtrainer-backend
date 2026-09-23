@@ -1,10 +1,12 @@
 package com.oskott.dogtrainerbackend.user.dto;
 
-import jakarta.validation.constraints.NotBlank;
+import com.oskott.dogtrainerbackend.auth.dto.AuthMethod;
+import jakarta.validation.constraints.Size;
 
-/**
- * Requires re-entering the current password as a safety check before this destructive,
- * irreversible action proceeds.
- */
-public record DeleteAccountRequest(@NotBlank String password) {
+public record DeleteAccountRequest(
+        AuthMethod method,
+        @Size(max = 255) String password,
+        @Size(max = 8192) String idToken,
+        @Size(max = 4096) String authorizationCode
+) {
 }

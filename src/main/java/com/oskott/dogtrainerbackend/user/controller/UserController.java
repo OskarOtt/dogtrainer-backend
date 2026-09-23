@@ -59,7 +59,7 @@ public class UserController {
 
     @DeleteMapping("/me")
     public ResponseEntity<Void> deleteAccount(@Valid @RequestBody DeleteAccountRequest request) {
-        userService.deleteAccount(request.password());
+        userService.deleteAccount(request);
         return ResponseEntity.noContent().build();
     }
 }
