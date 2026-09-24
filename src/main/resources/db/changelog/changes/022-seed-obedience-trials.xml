@@ -1,0 +1,358 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.29.xsd">
+
+    <changeSet id="022-seed-obedience-trials" author="oskott" context="!no-seed">
+        <insert tableName="training_categories">
+                <column name="id" value="8aadad5d-94a0-4f77-ac3d-2bf62124f89f"/>
+                <column name="name" value="Obedience Trials"/>
+                <column name="description" value="Competitive obedience trial classes with scored, standardized exercises."/>
+                <column name="display_order" value="8"/>
+        </insert>
+
+        <insert tableName="activities">
+                <column name="id" value="f7d22aa4-b5e8-4ad4-bd54-6f74c13237a5"/>
+                <column name="category_id" value="8aadad5d-94a0-4f77-ac3d-2bf62124f89f"/>
+                <column name="name" value="Class 1"/>
+                <column name="description" value="Entry-level obedience trial class."/>
+                <column name="display_order" value="1"/>
+        </insert>
+        <insert tableName="activities">
+                <column name="id" value="633d9797-7fca-4052-a429-4ddf8feb85f6"/>
+                <column name="category_id" value="8aadad5d-94a0-4f77-ac3d-2bf62124f89f"/>
+                <column name="name" value="Class 2"/>
+                <column name="description" value="Intermediate obedience trial class."/>
+                <column name="display_order" value="2"/>
+        </insert>
+        <insert tableName="activities">
+                <column name="id" value="22e2f9d3-2d16-4bdd-98ce-963ca30f5cb4"/>
+                <column name="category_id" value="8aadad5d-94a0-4f77-ac3d-2bf62124f89f"/>
+                <column name="name" value="Class 3"/>
+                <column name="description" value="Advanced obedience trial class."/>
+                <column name="display_order" value="3"/>
+        </insert>
+        <insert tableName="activities">
+                <column name="id" value="23696e5f-6b0b-4a15-b25f-207b2d36af6c"/>
+                <column name="category_id" value="8aadad5d-94a0-4f77-ac3d-2bf62124f89f"/>
+                <column name="name" value="FCI Class 3"/>
+                <column name="description" value="FCI advanced obedience trial class."/>
+                <column name="display_order" value="4"/>
+        </insert>
+
+        <!-- Class 1 (BEGINNER) -->
+        <insert tableName="exercises">
+                <column name="id" value="4578216c-676f-4431-ad50-52655f1986ec"/>
+                <column name="activity_id" value="f7d22aa4-b5e8-4ad4-bd54-6f74c13237a5"/>
+                <column name="name" value="Accessibility"/>
+                <column name="description" value="Coefficient: 2"/>
+                <column name="difficulty" value="BEGINNER"/>
+                <column name="display_order" value="1"/>
+        </insert>
+        <insert tableName="exercises">
+                <column name="id" value="be0ac6d5-5fca-4e97-a1ce-842e905322e3"/>
+                <column name="activity_id" value="f7d22aa4-b5e8-4ad4-bd54-6f74c13237a5"/>
+                <column name="name" value="Group Sit – 1 minute"/>
+                <column name="description" value="Coefficient: 5"/>
+                <column name="difficulty" value="BEGINNER"/>
+                <column name="display_order" value="2"/>
+        </insert>
+        <insert tableName="exercises">
+                <column name="id" value="d122039a-c5a4-4fb0-a5b1-7285e108f043"/>
+                <column name="activity_id" value="f7d22aa4-b5e8-4ad4-bd54-6f74c13237a5"/>
+                <column name="name" value="Heel on Lead"/>
+                <column name="description" value="Coefficient: 4"/>
+                <column name="difficulty" value="BEGINNER"/>
+                <column name="display_order" value="3"/>
+        </insert>
+        <insert tableName="exercises">
+                <column name="id" value="508b3423-14ec-42df-99bc-1e1d979754c3"/>
+                <column name="activity_id" value="f7d22aa4-b5e8-4ad4-bd54-6f74c13237a5"/>
+                <column name="name" value="Down from Stand"/>
+                <column name="description" value="Coefficient: 4"/>
+                <column name="difficulty" value="BEGINNER"/>
+                <column name="display_order" value="4"/>
+        </insert>
+        <insert tableName="exercises">
+                <column name="id" value="8dac503f-84de-4193-b6c7-6b6b280f6dc2"/>
+                <column name="activity_id" value="f7d22aa4-b5e8-4ad4-bd54-6f74c13237a5"/>
+                <column name="name" value="Recall from Sit"/>
+                <column name="description" value="Coefficient: 3"/>
+                <column name="difficulty" value="BEGINNER"/>
+                <column name="display_order" value="5"/>
+        </insert>
+        <insert tableName="exercises">
+                <column name="id" value="7d841404-3ef7-4c3d-8c58-42b476a145f3"/>
+                <column name="activity_id" value="f7d22aa4-b5e8-4ad4-bd54-6f74c13237a5"/>
+                <column name="name" value="Send Away with Stand"/>
+                <column name="description" value="Coefficient: 4"/>
+                <column name="difficulty" value="BEGINNER"/>
+                <column name="display_order" value="6"/>
+        </insert>
+        <insert tableName="exercises">
+                <column name="id" value="afce3b8d-d259-4737-883b-48f3d6b9bb12"/>
+                <column name="activity_id" value="f7d22aa4-b5e8-4ad4-bd54-6f74c13237a5"/>
+                <column name="name" value="Jump over Hurdle"/>
+                <column name="description" value="Coefficient: 4"/>
+                <column name="difficulty" value="BEGINNER"/>
+                <column name="display_order" value="7"/>
+        </insert>
+        <insert tableName="exercises">
+                <column name="id" value="4ec8a85c-aed8-48db-b3f4-e64116746b42"/>
+                <column name="activity_id" value="f7d22aa4-b5e8-4ad4-bd54-6f74c13237a5"/>
+                <column name="name" value="Distance Control"/>
+                <column name="description" value="Coefficient: 4"/>
+                <column name="difficulty" value="BEGINNER"/>
+                <column name="display_order" value="8"/>
+        </insert>
+        <insert tableName="exercises">
+                <column name="id" value="291c0a70-98ba-40ae-8465-0ff65e1ea908"/>
+                <column name="activity_id" value="f7d22aa4-b5e8-4ad4-bd54-6f74c13237a5"/>
+                <column name="name" value="Overall Impression"/>
+                <column name="description" value="Coefficient: 2"/>
+                <column name="difficulty" value="BEGINNER"/>
+                <column name="display_order" value="9"/>
+        </insert>
+
+        <!-- Class 2 (INTERMEDIATE) -->
+        <insert tableName="exercises">
+                <column name="id" value="2ddef3c2-7153-4d20-b9a8-2756b6230ffa"/>
+                <column name="activity_id" value="633d9797-7fca-4052-a429-4ddf8feb85f6"/>
+                <column name="name" value="Group Sit – 1 minute, Handler in Sight"/>
+                <column name="description" value="Coefficient: 3"/>
+                <column name="difficulty" value="INTERMEDIATE"/>
+                <column name="display_order" value="1"/>
+        </insert>
+        <insert tableName="exercises">
+                <column name="id" value="cc1c6858-98cd-4ebe-8ffc-4e1628a55d42"/>
+                <column name="activity_id" value="633d9797-7fca-4052-a429-4ddf8feb85f6"/>
+                <column name="name" value="Heel Free"/>
+                <column name="description" value="Coefficient: 4"/>
+                <column name="difficulty" value="INTERMEDIATE"/>
+                <column name="display_order" value="2"/>
+        </insert>
+        <insert tableName="exercises">
+                <column name="id" value="fce87f5a-7513-4cf4-9638-58394141d90b"/>
+                <column name="activity_id" value="633d9797-7fca-4052-a429-4ddf8feb85f6"/>
+                <column name="name" value="Stand or Down while Walking"/>
+                <column name="description" value="Coefficient: 3"/>
+                <column name="difficulty" value="INTERMEDIATE"/>
+                <column name="display_order" value="3"/>
+        </insert>
+        <insert tableName="exercises">
+                <column name="id" value="77ad8645-d811-445b-9f06-43d71c337d6f"/>
+                <column name="activity_id" value="633d9797-7fca-4052-a429-4ddf8feb85f6"/>
+                <column name="name" value="Recall from Sit with Stand"/>
+                <column name="description" value="Coefficient: 4"/>
+                <column name="difficulty" value="INTERMEDIATE"/>
+                <column name="display_order" value="4"/>
+        </insert>
+        <insert tableName="exercises">
+                <column name="id" value="c91b4cd3-1259-4e05-b568-6a55f80babdd"/>
+                <column name="activity_id" value="633d9797-7fca-4052-a429-4ddf8feb85f6"/>
+                <column name="name" value="Send Away with Down"/>
+                <column name="description" value="Coefficient: 4"/>
+                <column name="difficulty" value="INTERMEDIATE"/>
+                <column name="display_order" value="5"/>
+        </insert>
+        <insert tableName="exercises">
+                <column name="id" value="0d97a98f-5966-4824-b4dc-4d1f51516c7e"/>
+                <column name="activity_id" value="633d9797-7fca-4052-a429-4ddf8feb85f6"/>
+                <column name="name" value="Distance Control"/>
+                <column name="description" value="Coefficient: 4"/>
+                <column name="difficulty" value="INTERMEDIATE"/>
+                <column name="display_order" value="6"/>
+        </insert>
+        <insert tableName="exercises">
+                <column name="id" value="1bd1d5ca-9198-416c-9ff1-fa0fbafaf0cc"/>
+                <column name="activity_id" value="633d9797-7fca-4052-a429-4ddf8feb85f6"/>
+                <column name="name" value="Retrieve over Hurdle (Closed)"/>
+                <column name="description" value="Coefficient: 4"/>
+                <column name="difficulty" value="INTERMEDIATE"/>
+                <column name="display_order" value="7"/>
+        </insert>
+        <insert tableName="exercises">
+                <column name="id" value="d9e8d4ba-2a04-4f2f-81cb-dae2683603a1"/>
+                <column name="activity_id" value="633d9797-7fca-4052-a429-4ddf8feb85f6"/>
+                <column name="name" value="Send Around a Group of Cones and Return"/>
+                <column name="description" value="Coefficient: 4"/>
+                <column name="difficulty" value="INTERMEDIATE"/>
+                <column name="display_order" value="8"/>
+        </insert>
+        <insert tableName="exercises">
+                <column name="id" value="06d01376-1b4e-4d4e-8516-daea69f7fcd1"/>
+                <column name="activity_id" value="633d9797-7fca-4052-a429-4ddf8feb85f6"/>
+                <column name="name" value="Overall Impression"/>
+                <column name="description" value="Coefficient: 2"/>
+                <column name="difficulty" value="INTERMEDIATE"/>
+                <column name="display_order" value="9"/>
+        </insert>
+
+        <!-- Class 3 (ADVANCED) -->
+        <insert tableName="exercises">
+                <column name="id" value="d07d724c-dcd7-4393-a053-8e7403120d93"/>
+                <column name="activity_id" value="22e2f9d3-2d16-4bdd-98ce-963ca30f5cb4"/>
+                <column name="name" value="Group Down – 2 minutes, Handler Hidden"/>
+                <column name="description" value="Coefficient: 3"/>
+                <column name="difficulty" value="ADVANCED"/>
+                <column name="display_order" value="1"/>
+        </insert>
+        <insert tableName="exercises">
+                <column name="id" value="1a449ccf-cd5c-4cce-8857-04017bc0a266"/>
+                <column name="activity_id" value="22e2f9d3-2d16-4bdd-98ce-963ca30f5cb4"/>
+                <column name="name" value="Heel Free"/>
+                <column name="description" value="Coefficient: 4"/>
+                <column name="difficulty" value="ADVANCED"/>
+                <column name="display_order" value="2"/>
+        </insert>
+        <insert tableName="exercises">
+                <column name="id" value="31545f05-1fde-4429-9fd1-f95f8e928958"/>
+                <column name="activity_id" value="22e2f9d3-2d16-4bdd-98ce-963ca30f5cb4"/>
+                <column name="name" value="Sit and Down while Walking"/>
+                <column name="description" value="Coefficient: 3"/>
+                <column name="difficulty" value="ADVANCED"/>
+                <column name="display_order" value="3"/>
+        </insert>
+        <insert tableName="exercises">
+                <column name="id" value="adc5c461-ba4c-4139-85dc-ccd01943a0b1"/>
+                <column name="activity_id" value="22e2f9d3-2d16-4bdd-98ce-963ca30f5cb4"/>
+                <column name="name" value="Recall from Down with Down"/>
+                <column name="description" value="Coefficient: 3"/>
+                <column name="difficulty" value="ADVANCED"/>
+                <column name="display_order" value="4"/>
+        </insert>
+        <insert tableName="exercises">
+                <column name="id" value="1865d044-30e3-4637-80bd-693dd3f5294f"/>
+                <column name="activity_id" value="22e2f9d3-2d16-4bdd-98ce-963ca30f5cb4"/>
+                <column name="name" value="Send Away with Down and Recall to Heel Position"/>
+                <column name="description" value="Coefficient: 4"/>
+                <column name="difficulty" value="ADVANCED"/>
+                <column name="display_order" value="5"/>
+        </insert>
+        <insert tableName="exercises">
+                <column name="id" value="e5b0ed9a-8d28-429c-955a-a1d928e54dd1"/>
+                <column name="activity_id" value="22e2f9d3-2d16-4bdd-98ce-963ca30f5cb4"/>
+                <column name="name" value="Directed Retrieve"/>
+                <column name="description" value="Coefficient: 3"/>
+                <column name="difficulty" value="ADVANCED"/>
+                <column name="display_order" value="6"/>
+        </insert>
+        <insert tableName="exercises">
+                <column name="id" value="00841ceb-e5b3-425b-a927-4cb1fc1e7149"/>
+                <column name="activity_id" value="22e2f9d3-2d16-4bdd-98ce-963ca30f5cb4"/>
+                <column name="name" value="Scent Discrimination"/>
+                <column name="description" value="Coefficient: 3"/>
+                <column name="difficulty" value="ADVANCED"/>
+                <column name="display_order" value="7"/>
+        </insert>
+        <insert tableName="exercises">
+                <column name="id" value="b90025ac-b6c5-43a5-8c3c-9b4f9b48f20b"/>
+                <column name="activity_id" value="22e2f9d3-2d16-4bdd-98ce-963ca30f5cb4"/>
+                <column name="name" value="Distance Control"/>
+                <column name="description" value="Coefficient: 4"/>
+                <column name="difficulty" value="ADVANCED"/>
+                <column name="display_order" value="8"/>
+        </insert>
+        <insert tableName="exercises">
+                <column name="id" value="ab0e5c86-4f17-4b5d-88e7-9344af16da5e"/>
+                <column name="activity_id" value="22e2f9d3-2d16-4bdd-98ce-963ca30f5cb4"/>
+                <column name="name" value="Send Around a Group of Cones, Stop and Jump Hurdle"/>
+                <column name="description" value="Coefficient: 3"/>
+                <column name="difficulty" value="ADVANCED"/>
+                <column name="display_order" value="9"/>
+        </insert>
+        <insert tableName="exercises">
+                <column name="id" value="cabacd45-6b28-4268-9882-0e56fe711c7d"/>
+                <column name="activity_id" value="22e2f9d3-2d16-4bdd-98ce-963ca30f5cb4"/>
+                <column name="name" value="Overall Impression"/>
+                <column name="description" value="Coefficient: 2"/>
+                <column name="difficulty" value="ADVANCED"/>
+                <column name="display_order" value="10"/>
+        </insert>
+
+        <!-- FCI Class 3 (ADVANCED) -->
+        <insert tableName="exercises">
+                <column name="id" value="c5053a0b-38f5-4d48-b530-7842903c4459"/>
+                <column name="activity_id" value="23696e5f-6b0b-4a15-b25f-207b2d36af6c"/>
+                <column name="name" value="Group Sit – 2 minutes, Handler Hidden"/>
+                <column name="description" value="Coefficient: 2"/>
+                <column name="difficulty" value="ADVANCED"/>
+                <column name="display_order" value="1"/>
+        </insert>
+        <insert tableName="exercises">
+                <column name="id" value="89160e8e-083d-4c02-953c-a78bf410afaa"/>
+                <column name="activity_id" value="23696e5f-6b0b-4a15-b25f-207b2d36af6c"/>
+                <column name="name" value="Group Down – 1 minute with Recall"/>
+                <column name="description" value="Coefficient: 2"/>
+                <column name="difficulty" value="ADVANCED"/>
+                <column name="display_order" value="2"/>
+        </insert>
+        <insert tableName="exercises">
+                <column name="id" value="95febc63-1ec7-4bce-9457-00ce7fa27acf"/>
+                <column name="activity_id" value="23696e5f-6b0b-4a15-b25f-207b2d36af6c"/>
+                <column name="name" value="Heel Free"/>
+                <column name="description" value="Coefficient: 4"/>
+                <column name="difficulty" value="ADVANCED"/>
+                <column name="display_order" value="3"/>
+        </insert>
+        <insert tableName="exercises">
+                <column name="id" value="b76e5b6f-f9af-4f7e-9d14-de17f69414d6"/>
+                <column name="activity_id" value="23696e5f-6b0b-4a15-b25f-207b2d36af6c"/>
+                <column name="name" value="Positions while Walking, with Recall"/>
+                <column name="description" value="Coefficient: 3"/>
+                <column name="difficulty" value="ADVANCED"/>
+                <column name="display_order" value="4"/>
+        </insert>
+        <insert tableName="exercises">
+                <column name="id" value="9f42a6c7-78d2-4703-865e-d8bde73595ad"/>
+                <column name="activity_id" value="23696e5f-6b0b-4a15-b25f-207b2d36af6c"/>
+                <column name="name" value="Recall with Stand/Sit/Down"/>
+                <column name="description" value="Coefficient: 3"/>
+                <column name="difficulty" value="ADVANCED"/>
+                <column name="display_order" value="5"/>
+        </insert>
+        <insert tableName="exercises">
+                <column name="id" value="a913962f-715a-48d5-b56f-c6b80f67fb0c"/>
+                <column name="activity_id" value="23696e5f-6b0b-4a15-b25f-207b2d36af6c"/>
+                <column name="name" value="Directed Send Away with Down and Recall to Heel Position"/>
+                <column name="description" value="Coefficient: 4"/>
+                <column name="difficulty" value="ADVANCED"/>
+                <column name="display_order" value="6"/>
+        </insert>
+        <insert tableName="exercises">
+                <column name="id" value="d3881e1a-c851-46ba-9e92-b68492ad1db2"/>
+                <column name="activity_id" value="23696e5f-6b0b-4a15-b25f-207b2d36af6c"/>
+                <column name="name" value="Directed Retrieve"/>
+                <column name="description" value="Coefficient: 3"/>
+                <column name="difficulty" value="ADVANCED"/>
+                <column name="display_order" value="7"/>
+        </insert>
+        <insert tableName="exercises">
+                <column name="id" value="58b76db9-7275-4fcb-865d-fc6bca334edd"/>
+                <column name="activity_id" value="23696e5f-6b0b-4a15-b25f-207b2d36af6c"/>
+                <column name="name" value="Send Around a Group of Cones, Stand/Sit/Down, Retrieve and Jump Hurdle"/>
+                <column name="description" value="Coefficient: 4"/>
+                <column name="difficulty" value="ADVANCED"/>
+                <column name="display_order" value="8"/>
+        </insert>
+        <insert tableName="exercises">
+                <column name="id" value="37c0ea74-6f62-445d-b918-c90d883e72dd"/>
+                <column name="activity_id" value="23696e5f-6b0b-4a15-b25f-207b2d36af6c"/>
+                <column name="name" value="Scent Discrimination"/>
+                <column name="description" value="Coefficient: 3"/>
+                <column name="difficulty" value="ADVANCED"/>
+                <column name="display_order" value="9"/>
+        </insert>
+        <insert tableName="exercises">
+                <column name="id" value="bfc16614-7e35-44b4-9c32-a5b8904cc517"/>
+                <column name="activity_id" value="23696e5f-6b0b-4a15-b25f-207b2d36af6c"/>
+                <column name="name" value="Distance Control"/>
+                <column name="description" value="Coefficient: 4"/>
+                <column name="difficulty" value="ADVANCED"/>
+                <column name="display_order" value="10"/>
+        </insert>
+    </changeSet>
+
+</databaseChangeLog>
