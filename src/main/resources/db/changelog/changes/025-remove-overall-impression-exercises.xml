@@ -1,0 +1,32 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.29.xsd">
+
+    <changeSet id="025-remove-overall-impression-exercises" author="copilot">
+        <delete tableName="session_exercises">
+            <where>exercise_id IN (
+                '291c0a70-98ba-40ae-8465-0ff65e1ea908',
+                '06d01376-1b4e-4d4e-8516-daea69f7fcd1',
+                'cabacd45-6b28-4268-9882-0e56fe711c7d'
+            )</where>
+        </delete>
+        <delete tableName="training_plan_exercises">
+            <where>exercise_id IN (
+                '291c0a70-98ba-40ae-8465-0ff65e1ea908',
+                '06d01376-1b4e-4d4e-8516-daea69f7fcd1',
+                'cabacd45-6b28-4268-9882-0e56fe711c7d'
+            )</where>
+        </delete>
+        <delete tableName="exercises">
+            <where>id IN (
+                '291c0a70-98ba-40ae-8465-0ff65e1ea908',
+                '06d01376-1b4e-4d4e-8516-daea69f7fcd1',
+                'cabacd45-6b28-4268-9882-0e56fe711c7d'
+            )</where>
+        </delete>
+    </changeSet>
+
+</databaseChangeLog>

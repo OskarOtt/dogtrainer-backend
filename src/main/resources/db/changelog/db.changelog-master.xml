@@ -29,5 +29,6 @@
     <include file="db/changelog/changes/022-seed-obedience-trials.xml" relativeToChangelogFile="false"/>
     <include file="db/changelog/changes/023-reorder-obedience-trials-first.xml" relativeToChangelogFile="false"/>
     <include file="db/changelog/changes/024-add-catalog-translations.xml" relativeToChangelogFile="false"/>
+    <include file="db/changelog/changes/025-remove-overall-impression-exercises.xml" relativeToChangelogFile="false"/>
 
 </databaseChangeLog>

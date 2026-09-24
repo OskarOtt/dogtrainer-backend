@@ -100,7 +100,9 @@ class TrainingCatalogControllerIntegrationTest {
                         .header("Authorization", "Bearer " + accessToken)
                         .header("Accept-Language", "nb"))
                 .andExpect(status().isOk()));
-        assertThat(exercises).hasSize(9);
+        assertThat(exercises).hasSize(8);
+        assertThat(exercises).noneMatch(exercise ->
+                exercise.get("name").asString().equals("Helhetsinntrykk"));
         assertThat(exercises.get(0).get("name").asString()).isEqualTo("Tilgjengelighet");
         assertThat(exercises.get(0).get("description").asString()).isEqualTo("Koeffisient: 2");
         assertThat(exercises.get(0).has("id")).isTrue();
