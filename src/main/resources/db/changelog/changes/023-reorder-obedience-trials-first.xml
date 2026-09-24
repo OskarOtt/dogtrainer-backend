@@ -1,0 +1,48 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.29.xsd">
+
+    <!--
+        Reorders training_categories so "Obedience Trials" appears first when
+        starting a training session. Existing categories are shifted down by
+        one to keep display_order sequential.
+    -->
+    <changeSet id="023-reorder-obedience-trials-first" author="oskott" context="!no-seed">
+        <update tableName="training_categories">
+            <column name="display_order" value="8"/>
+            <where>name = 'Social Training'</where>
+        </update>
+        <update tableName="training_categories">
+            <column name="display_order" value="7"/>
+            <where>name = 'Nosework'</where>
+        </update>
+        <update tableName="training_categories">
+            <column name="display_order" value="6"/>
+            <where>name = 'Search'</where>
+        </update>
+        <update tableName="training_categories">
+            <column name="display_order" value="5"/>
+            <where>name = 'Tracking'</where>
+        </update>
+        <update tableName="training_categories">
+            <column name="display_order" value="4"/>
+            <where>name = 'Agility'</where>
+        </update>
+        <update tableName="training_categories">
+            <column name="display_order" value="3"/>
+            <where>name = 'Obedience'</where>
+        </update>
+        <update tableName="training_categories">
+            <column name="display_order" value="2"/>
+            <where>name = 'Everyday Training'</where>
+        </update>
+        <update tableName="training_categories">
+            <column name="display_order" value="1"/>
+            <where>name = 'Obedience Trials'</where>
+        </update>
+    </changeSet>
+
+</databaseChangeLog>
