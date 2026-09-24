@@ -4,6 +4,7 @@ import com.oskott.dogtrainerbackend.common.exception.AccessDeniedForResourceExce
 import com.oskott.dogtrainerbackend.common.exception.BusinessRuleException;
 import com.oskott.dogtrainerbackend.common.exception.InvalidFileException;
 import com.oskott.dogtrainerbackend.common.exception.ResourceNotFoundException;
+import com.oskott.dogtrainerbackend.common.i18n.SupportedLocale;
 import com.oskott.dogtrainerbackend.common.security.CurrentUserProvider;
 import com.oskott.dogtrainerbackend.dog.entity.Dog;
 import com.oskott.dogtrainerbackend.dog.repository.DogRepository;
@@ -189,6 +190,11 @@ public class PostService {
 
     private String buildSessionCaption(Dog dog, TrainingSessionResponse session) {
         int exerciseCount = session.exercises().size();
+        if (SupportedLocale.isBokmal()) {
+            String exercisePart = exerciseCount == 1 ? "1 øvelse" : exerciseCount + " øvelser";
+            return "%s fullførte en %d-minutters treningsøkt med %s!"
+                    .formatted(dog.getName(), session.durationMinutes(), exercisePart);
+        }
         String exercisePart = exerciseCount == 1 ? "1 exercise" : exerciseCount + " exercises";
         return "%s finished a %d-minute training session with %s!"
                 .formatted(dog.getName(), session.durationMinutes(), exercisePart);

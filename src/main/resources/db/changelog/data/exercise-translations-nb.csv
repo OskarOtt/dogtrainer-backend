@@ -1,0 +1,87 @@
+id,exercise_id,locale,name,description,instructions
+2dc85e52-929f-47e5-85b1-c80ff07aff1b,2dc85e52-929f-47e5-85b1-c80ff07aff1b,nb,Ro på matte,"Lær hunden å slappe av på en bestemt matte på signal.","Lokk hunden opp på matten med en godbit. Marker og belønn rolig atferd. Øk gradvis tiden før belønning."
+7d28f6e3-a8d2-4a9e-a00b-7c28e9365f86,7d28f6e3-a8d2-4a9e-a00b-7c28e9365f86,nb,Høflig hilsing,"Hils på mennesker uten å hoppe.","Be en medhjelper nærme seg. Belønn fire poter i bakken. La medhjelperen trekke seg tilbake hvis hunden hopper, og belønn bare rolig hilsing."
+bf3c5d78-642a-4a8a-8179-da1f5d092411,bf3c5d78-642a-4a8a-8179-da1f5d092411,nb,Vent ved dører,"Vent på tillatelse før hunden går gjennom en døråpning.","Åpne døren litt. Lukk den hvis hunden beveger seg mot den. Belønn at hunden venter, og gi deretter frisignal for å gå gjennom."
+4bab3982-9086-4866-abbc-b36c8e9467ac,4bab3982-9086-4866-abbc-b36c8e9467ac,nb,Gå med slakt bånd,"Gå ved siden av føreren uten å trekke.","Stopp med én gang båndet strammes. Fortsett når hunden kommer tilbake til siden din, og belønn ofte."
+09cff92f-54b5-4e3e-b370-18f27076fe15,09cff92f-54b5-4e3e-b370-18f27076fe15,nb,Passere forstyrrelser,"Behold slakt bånd nær forstyrrelser.","Start på en avstand der hunden klarer å holde fokus. Belønn oppmerksomhet, og reduser avstanden gradvis gjennom flere økter."
+85305d88-5012-4ed1-80e2-f0072ea3168a,85305d88-5012-4ed1-80e2-f0072ea3168a,nb,Frivillig kontakt,"Hunden ser frivillig på føreren under gange.","Gå normalt og marker og belønn all spontan øyekontakt uten å gi signal. Øk gradvis tiden mellom belønningene."
+6b41d699-cc9d-4831-991a-5bfe5c6cccdd,6b41d699-cc9d-4831-991a-5bfe5c6cccdd,nb,Grunnleggende innkalling,"Innkalling i et miljø med få forstyrrelser.","Si innkallingssignalet én gang på kort avstand. Belønn entusiastisk straks hunden kommer."
+c1da10d7-ccbc-400b-bf66-2ca0b7e74a98,c1da10d7-ccbc-400b-bf66-2ca0b7e74a98,nb,Innkalling på lang avstand,"Innkalling fra lengre avstand.","Øk avstanden gradvis mellom repetisjonene. Bruk langline for sikkerhet, og gi en stor belønning når hunden kommer helt inn."
+a945120a-8f82-4035-9570-a2343dd5f301,a945120a-8f82-4035-9570-a2343dd5f301,nb,Innkalling med forstyrrelser,"Innkalling når konkurrerende forstyrrelser er til stede.","Introduser milde forstyrrelser, som leker eller andre mennesker, på håndterbar avstand. Belønn rikelig når hunden velger å forlate forstyrrelsen."
+ff2b7af7-4ccf-4d74-a52c-3f565805d434,ff2b7af7-4ccf-4d74-a52c-3f565805d434,nb,Grunnleggende fotposisjon,"Hold fotposisjon i stå og under noen få skritt.","Lokk hunden inn i posisjon ved siden av deg. Ta ett eller to skritt, marker og belønn mens hunden holder posisjonen."
+cb4b4401-0533-4ef2-ae5b-894c5bb5b5d9,cb4b4401-0533-4ef2-ae5b-894c5bb5b5d9,nb,Fot med vendinger,"Behold fotposisjonen gjennom vendinger.","Øv på langsomme vendinger i begge retninger. Belønn hunden for å tilpasse tempo og posisjon."
+5cdb09d2-eaeb-48cc-a9eb-4789b3d16ab9,5cdb09d2-eaeb-48cc-a9eb-4789b3d16ab9,nb,Fri ved fot,"Behold fotposisjonen uten bånd.","Ta av båndet på et sikkert område. Belønn ofte i starten, og øk gradvis avstanden mellom belønningene."
+7e4c931a-5bd0-4f2f-885c-16e3add9ee7e,7e4c931a-5bd0-4f2f-885c-16e3add9ee7e,nb,Sitt og bli,"Hold sittende posisjon stadig lenger.","Gi signal om sitt, vent noen sekunder og belønn. Øk gradvis tiden før frisignal."
+5433b3f0-8112-4b1b-84d6-bfcf907ad4cf,5433b3f0-8112-4b1b-84d6-bfcf907ad4cf,nb,Dekk og bli,"Hold liggende posisjon stadig lenger.","Gi signal om dekk og vent før belønning. Legg gradvis til varighet, avstand og milde forstyrrelser."
+ae23e433-dc5d-4396-8b94-e120891fa3c0,ae23e433-dc5d-4396-8b94-e120891fa3c0,nb,Bli med avstand,"Hold posisjonen mens føreren går bort.","Gi bli-signal, ta ett skritt bakover, gå tilbake og belønn. Øk gradvis avstanden."
+011f2e1d-e861-4a4a-881f-7b4e0bdfb8e8,011f2e1d-e861-4a4a-881f-7b4e0bdfb8e8,nb,Grunnleggende apportering,"Plukk opp og hold en leke eller apportbukk.","Oppmuntre hunden til å ta gjenstanden i munnen. Belønn først kort hold og deretter avlevering på signal."
+e435a0c3-158d-49e0-8756-184e706aac58,e435a0c3-158d-49e0-8756-184e706aac58,nb,Apportering til hånd,"Hent en gjenstand og lever den direkte i hånden.","Kast gjenstanden et kort stykke. Belønn hunden for å hente den helt tilbake og slippe den i hånden din."
+9253eeaa-ea46-4fc6-83c1-8a42c06ee221,9253eeaa-ea46-4fc6-83c1-8a42c06ee221,nb,Apportering over hinder,"Apporter en gjenstand over et lavt hinder.","Plasser et lavt hinder mellom hunden og gjenstanden. Belønn rene apporteringer over hinderet begge veier."
+26127c9a-4112-4975-9cf4-6aa33a50e067,26127c9a-4112-4975-9cf4-6aa33a50e067,nb,Enkelt hopp,"Hopp over ett hinder på signal.","Sett hinderet lavt. Send eller før hunden over, og belønn umiddelbart etter landingen."
+bed72e57-9b6d-4fb6-a661-264fb4fd2252,bed72e57-9b6d-4fb6-a661-264fb4fd2252,nb,Hoppsekvens,"Hopp en kort sekvens med hinder.","Sett opp to til tre hinder på rekke. Før hunden gjennom sekvensen, og belønn ved slutten."
+df99c4c1-f1ca-45ee-aaae-364dd24ca66a,df99c4c1-f1ca-45ee-aaae-364dd24ca66a,nb,Hopp med forstyrrelse,"Hopp et hinder med forstyrrelser i nærheten.","Legg til en mild forstyrrelse nær hinderet. Belønn hunden for å holde fokus på hinderet og føreren."
+649b7a83-2b6d-4ffd-8ee8-9bd37910d1ed,649b7a83-2b6d-4ffd-8ee8-9bd37910d1ed,nb,Rett tunnel,"Løp gjennom en kort og rett tunnel.","Hold tunnelen åpen og kall hunden gjennom fra den andre enden. Belønn umiddelbart ved utgangen."
+0004ec8f-5657-4792-84b3-e3d8317a9ab1,0004ec8f-5657-4792-84b3-e3d8317a9ab1,nb,Buet tunnel,"Løp gjennom en buet tunnel.","Øk buen i tunnelen gradvis gjennom flere økter, og belønn trygge og raske løp."
+c33ed54d-af89-4bf3-a8ab-4f0f442c5744,c33ed54d-af89-4bf3-a8ab-4f0f442c5744,nb,Hinderskille ved tunnel,"Velg riktig hinder når en tunnel står ved siden av et annet hinder.","Plasser tunnelen ved siden av et annet hinder. Vis tydelig vei mot tunnelen, og belønn riktige valg."
+c75a9b0c-ddf5-4591-94b2-bc6f75ee7958,c75a9b0c-ddf5-4591-94b2-bc6f75ee7958,nb,Grunnleggende møne,"Gå opp og ned et lavt møne.","Start med mønet på laveste høyde. Før hunden rolig over, og belønn berøring av kontaktfeltet nederst."
+bf5b232f-7184-42cd-a438-04fd168c7613,bf5b232f-7184-42cd-a438-04fd168c7613,nb,Bom,"Gå trygt over en hevet planke.","Start med planken nær bakken. Belønn jevnt tempo og kontrollert stopp i kontaktfeltet."
+8ce30a9b-7621-4365-88c2-6c36d6c53981,8ce30a9b-7621-4365-88c2-6c36d6c53981,nb,Introduksjon til vippe,"Bli trygg på bevegelsen i vippen.","Støtt vippen nær bakken slik at den beveger seg lite. Øk utslaget gradvis etter hvert som hunden blir trygg."
+13ea3466-107a-4368-8edf-93dda8c24808,13ea3466-107a-4368-8edf-93dda8c24808,nb,Kort rett spor,"Følg et kort og rett spor.","Legg et kort, rett spor med godbiter. La det ligge noen minutter, og før hunden langs sporet i sporline."
+6a2096eb-9950-4a70-b6e5-26a68344652f,6a2096eb-9950-4a70-b6e5-26a68344652f,nb,Spor med vinkler,"Følg et spor med vinkler.","Legg et spor med én eller to vinkler. La hunden finne retningen selv, og belønn ved vinkelen."
+7921e364-6a4b-40ea-b1a9-7456c430ce08,7921e364-6a4b-40ea-b1a9-7456c430ce08,nb,Eldet spor,"Følg et spor som har ligget en stund.","Legg sporet og la det ligge i 30–60 minutter før dere går det. Belønn et sikkert og målrettet søk med nesen nede."
+86b3c657-3abf-4e75-9c0c-5a6a987dc58e,86b3c657-3abf-4e75-9c0c-5a6a987dc58e,nb,Finne én gjenstand,"Finn og marker én gjenstand i sporet.","Legg én gjenstand et stykke ut i sporet. Belønn enhver tydelig markering, som dekk, sitt eller påvisning."
+08f160ee-1523-4c54-95cc-d51a97310ea1,08f160ee-1523-4c54-95cc-d51a97310ea1,nb,Skille mellom flere gjenstander,"Finn flere gjenstander og ignorer avledende objekter.","Legg flere gjenstander og avledende objekter langs sporet. Belønn bare markering av riktige gjenstander."
+3a4b72d6-eca2-4e04-ba7b-3cfccc5da690,3a4b72d6-eca2-4e04-ba7b-3cfccc5da690,nb,Søk i ett rom,"Søk etter et skjult mål i ett rom.","Skjul målet på et enkelt sted i rommet. Send hunden inn, og belønn en tydelig markering."
+4d1e1642-2e83-43a7-9093-5c55b0eb7759,4d1e1642-2e83-43a7-9093-5c55b0eb7759,nb,Søk i flere rom,"Søk gjennom flere rom som henger sammen.","Skjul målet i ett av flere rom. La hunden arbeide systematisk gjennom hvert rom før funnet belønnes."
+e109d620-f706-48e0-96fe-789409b46c10,e109d620-f706-48e0-96fe-789409b46c10,nb,Søk med forstyrrelser,"Søk i et område med forstyrrende gjenstander eller lukter.","Legg forstyrrende lukter eller gjenstander nær målet. Belønn bare markering av riktig mål."
+e83bcc83-e666-4a26-b4a7-e78f7bc4fe2d,e83bcc83-e666-4a26-b4a7-e78f7bc4fe2d,nb,Utvendig kjøretøysøk,"Søk på utsiden av et kjøretøy.","Skjul målet på utsiden av et kjøretøy. Før hunden systematisk rundt kjøretøyet, og belønn markeringen."
+7ed0f1b5-a7b5-4e13-b3a2-3556fec04065,7ed0f1b5-a7b5-4e13-b3a2-3556fec04065,nb,Innvendig kjøretøysøk,"Søk inne i et kjøretøy med åpne dører.","Skjul målet inne i kjøretøyet. La hunden søke under oppsyn, og belønn en tydelig markering."
+3758f44a-60e2-4ae2-b83d-31c0d29b5ca4,3758f44a-60e2-4ae2-b83d-31c0d29b5ca4,nb,Luktidentifikasjon i én beholder,"Finn beholderen med mållukt.","Sett flere beholdere på rekke med lukt i én av dem. Belønn hunden for å markere riktig beholder."
+cdf98e33-5b98-465c-9b74-3376578ba816,cdf98e33-5b98-465c-9b74-3376578ba816,nb,Søk i flere beholdere,"Søk etter lukt i et større utvalg beholdere.","Øk antall beholdere og varier plasseringen. Belønn sikre markeringer av riktig beholder."
+17a354d9-7672-4e9c-b313-eb4e49069484,17a354d9-7672-4e9c-b313-eb4e49069484,nb,Søk i beholdere i ulike høyder,"Søk i beholdere som står i ulike høyder.","Plasser noen beholdere på lave plattformer eller hyller. Belønn hunden for å søke i alle høyder og markere riktig."
+1a5220b2-0dc6-4758-b49c-3b0ebe9e1f14,1a5220b2-0dc6-4758-b49c-3b0ebe9e1f14,nb,Lukt på utsiden av kjøretøy,"Finn mållukt på utsiden av et kjøretøy.","Skjul luktkilden på utsiden av et kjøretøy. Før hunden rundt kjøretøyet, og belønn en tydelig markering ved kilden."
+5d2a6b65-5d88-49ee-9973-631e3422a832,5d2a6b65-5d88-49ee-9973-631e3422a832,nb,Søk i åpent område,"Søk etter lukt i et større utendørsområde.","Skjul luktkilden i et åpent område med vind og naturlige forstyrrelser. Belønn en sikker og målrettet markering."
+5d7faa69-46e7-4198-b3d6-324e3d044fe6,5d7faa69-46e7-4198-b3d6-324e3d044fe6,nb,Parallellgåing,"Gå rolig parallelt med en annen hund på avstand.","Gå med hundene parallelt og med god avstand. Belønn rolig atferd, og reduser avstanden gradvis."
+54d73c37-635d-4c56-b5c1-70f7d655c1ff,54d73c37-635d-4c56-b5c1-70f7d655c1ff,nb,Kontrollert hilsing,"Hils rolig på en annen hund i bånd.","Tillat en kort og rolig hilsing mellom to hunder som kjenner hverandre. Avbryt og belønn hvis en av hundene blir for ivrig."
+54ca776e-4998-4f5e-a253-cb8c6144c678,54ca776e-4998-4f5e-a253-cb8c6144c678,nb,Innkalling fra lek,"Kom på innkalling fra lek med en annen hund.","Gi innkallingssignal under lek. Belønn rikelig når hunden avbryter leken og kommer til føreren."
+7274f7d9-8d89-4d82-8687-deb6bb459511,7274f7d9-8d89-4d82-8687-deb6bb459511,nb,Møte fremmede,"Møt en ukjent person på en rolig måte.","La en fremmed nærme seg langsomt og tilby en hånd å lukte på. Belønn rolig og avslappet kroppsspråk."
+a5fbd9d3-7670-471b-a889-e52a881a2585,a5fbd9d3-7670-471b-a889-e52a881a2585,nb,Tilvenning til håndtering,"Godta håndtering av poter, ører og munn.","Håndter forsiktig én kroppsdel om gangen, og kombiner hver berøring med belønning. Øk varigheten gradvis."
+7968d984-5393-49a4-86e1-f70bf6a9adeb,7968d984-5393-49a4-86e1-f70bf6a9adeb,nb,Rolig rundt barn,"Vær rolig og forsiktig rundt barn.","La hunden samhandle rolig og strukturert med barn under oppsyn. Belønn forsiktig og avslappet atferd hele tiden."
+4578216c-676f-4431-ad50-52655f1986ec,4578216c-676f-4431-ad50-52655f1986ec,nb,Tilgjengelighet,"Koeffisient: 2",
+be0ac6d5-5fca-4e97-a1ce-842e905322e3,be0ac6d5-5fca-4e97-a1ce-842e905322e3,nb,Fellesdekk 1 minutt,"Koeffisient: 5",
+d122039a-c5a4-4fb0-a5b1-7285e108f043,d122039a-c5a4-4fb0-a5b1-7285e108f043,nb,Lineføring,"Koeffisient: 4",
+508b3423-14ec-42df-99bc-1e1d979754c3,508b3423-14ec-42df-99bc-1e1d979754c3,nb,Dekk fra holdt,"Koeffisient: 4",
+8dac503f-84de-4193-b6c7-6b6b280f6dc2,8dac503f-84de-4193-b6c7-6b6b280f6dc2,nb,Innkalling fra sitt,"Koeffisient: 3",
+7d841404-3ef7-4c3d-8c58-42b476a145f3,7d841404-3ef7-4c3d-8c58-42b476a145f3,nb,Fremadsending med stå,"Koeffisient: 4",
+afce3b8d-d259-4737-883b-48f3d6b9bb12,afce3b8d-d259-4737-883b-48f3d6b9bb12,nb,Hopp over hinder,"Koeffisient: 4",
+4ec8a85c-aed8-48db-b3f4-e64116746b42,4ec8a85c-aed8-48db-b3f4-e64116746b42,nb,Kontroll over hunden på avstand,"Koeffisient: 4",
+291c0a70-98ba-40ae-8465-0ff65e1ea908,291c0a70-98ba-40ae-8465-0ff65e1ea908,nb,Helhetsinntrykk,"Koeffisient: 2",
+2ddef3c2-7153-4d20-b9a8-2756b6230ffa,2ddef3c2-7153-4d20-b9a8-2756b6230ffa,nb,"Felles sitt 1 minutt, synlig fører","Koeffisient: 3",
+cc1c6858-98cd-4ebe-8ffc-4e1628a55d42,cc1c6858-98cd-4ebe-8ffc-4e1628a55d42,nb,Fri ved fot,"Koeffisient: 4",
+fce87f5a-7513-4cf4-9638-58394141d90b,fce87f5a-7513-4cf4-9638-58394141d90b,nb,"Stå, eller dekk under marsj","Koeffisient: 3",
+77ad8645-d811-445b-9f06-43d71c337d6f,77ad8645-d811-445b-9f06-43d71c337d6f,nb,Innkalling fra sitt med stå,"Koeffisient: 4",
+c91b4cd3-1259-4e05-b568-6a55f80babdd,c91b4cd3-1259-4e05-b568-6a55f80babdd,nb,Fremadsending med dekk,"Koeffisient: 4",
+0d97a98f-5966-4824-b4dc-4d1f51516c7e,0d97a98f-5966-4824-b4dc-4d1f51516c7e,nb,Kontroll over hunden på avstand,"Koeffisient: 4",
+1bd1d5ca-9198-416c-9ff1-fa0fbafaf0cc,1bd1d5ca-9198-416c-9ff1-fa0fbafaf0cc,nb,Apportering over hinder (lukket),"Koeffisient: 4",
+d9e8d4ba-2a04-4f2f-81cb-dae2683603a1,d9e8d4ba-2a04-4f2f-81cb-dae2683603a1,nb,Fremadsending rundt en gruppe kjegler og returnere,"Koeffisient: 4",
+06d01376-1b4e-4d4e-8516-daea69f7fcd1,06d01376-1b4e-4d4e-8516-daea69f7fcd1,nb,Helhetsinntrykk,"Koeffisient: 2",
+d07d724c-dcd7-4393-a053-8e7403120d93,d07d724c-dcd7-4393-a053-8e7403120d93,nb,Fellesdekk 2 minutter med skjult fører,"Koeffisient: 3",
+1a449ccf-cd5c-4cce-8857-04017bc0a266,1a449ccf-cd5c-4cce-8857-04017bc0a266,nb,Fri ved fot,"Koeffisient: 4",
+31545f05-1fde-4429-9fd1-f95f8e928958,31545f05-1fde-4429-9fd1-f95f8e928958,nb,Sitt og dekk under marsj,"Koeffisient: 3",
+adc5c461-ba4c-4139-85dc-ccd01943a0b1,adc5c461-ba4c-4139-85dc-ccd01943a0b1,nb,Innkalling fra dekk med dekk,"Koeffisient: 3",
+1865d044-30e3-4637-80bd-693dd3f5294f,1865d044-30e3-4637-80bd-693dd3f5294f,nb,Fremadsending med dekk og på plass,"Koeffisient: 4",
+e5b0ed9a-8d28-429c-955a-a1d928e54dd1,e5b0ed9a-8d28-429c-955a-a1d928e54dd1,nb,Apportering med dirigering,"Koeffisient: 3",
+00841ceb-e5b3-425b-a927-4cb1fc1e7149,00841ceb-e5b3-425b-a927-4cb1fc1e7149,nb,Neseprøve,"Koeffisient: 3",
+b90025ac-b6c5-43a5-8c3c-9b4f9b48f20b,b90025ac-b6c5-43a5-8c3c-9b4f9b48f20b,nb,Kontroll over hunden på avstand,"Koeffisient: 4",
+ab0e5c86-4f17-4b5d-88e7-9344af16da5e,ab0e5c86-4f17-4b5d-88e7-9344af16da5e,nb,"Fremadsending rundt en gruppe kjegler, stopp og hoppe et hinder","Koeffisient: 3",
+cabacd45-6b28-4268-9882-0e56fe711c7d,cabacd45-6b28-4268-9882-0e56fe711c7d,nb,Helhetsinntrykk,"Koeffisient: 2",
+c5053a0b-38f5-4d48-b530-7842903c4459,c5053a0b-38f5-4d48-b530-7842903c4459,nb,Felles sitt 2 min med skjult fører,"Koeffisient: 2",
+89160e8e-083d-4c02-953c-a78bf410afaa,89160e8e-083d-4c02-953c-a78bf410afaa,nb,Fellesdekk 1 minutt med innkalling,"Koeffisient: 2",
+95febc63-1ec7-4bce-9457-00ce7fa27acf,95febc63-1ec7-4bce-9457-00ce7fa27acf,nb,Fri ved fot,"Koeffisient: 4",
+b76e5b6f-f9af-4f7e-9d14-de17f69414d6,b76e5b6f-f9af-4f7e-9d14-de17f69414d6,nb,"Momenter under marsj, med innkalling","Koeffisient: 3",
+9f42a6c7-78d2-4703-865e-d8bde73595ad,9f42a6c7-78d2-4703-865e-d8bde73595ad,nb,Innkalling med stå/sitt/dekk,"Koeffisient: 3",
+a913962f-715a-48d5-b56f-c6b80f67fb0c,a913962f-715a-48d5-b56f-c6b80f67fb0c,nb,"Fremadsending med dirigering, dekk og på plass","Koeffisient: 4",
+d3881e1a-c851-46ba-9e92-b68492ad1db2,d3881e1a-c851-46ba-9e92-b68492ad1db2,nb,Apport med dirigering,"Koeffisient: 3",
+58b76db9-7275-4fcb-865d-fc6bca334edd,58b76db9-7275-4fcb-865d-fc6bca334edd,nb,"Fremadsending rundt en gruppe kjegler, stå/sitt/dekk, apportering, hopp over hinder","Koeffisient: 4",
+37c0ea74-6f62-445d-b918-c90d883e72dd,37c0ea74-6f62-445d-b918-c90d883e72dd,nb,Neseprøve,"Koeffisient: 3",
+bfc16614-7e35-44b4-9c32-a5b8904cc517,bfc16614-7e35-44b4-9c32-a5b8904cc517,nb,Kontroll over hunden på avstand,"Koeffisient: 4",
