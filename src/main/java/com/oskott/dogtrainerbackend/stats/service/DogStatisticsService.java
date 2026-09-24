@@ -14,6 +14,7 @@ import com.oskott.dogtrainerbackend.training.entity.TrainingSession;
 import com.oskott.dogtrainerbackend.training.repository.ExerciseRepository;
 import com.oskott.dogtrainerbackend.training.repository.SessionExerciseRepository;
 import com.oskott.dogtrainerbackend.training.repository.TrainingSessionRepository;
+import com.oskott.dogtrainerbackend.training.service.TrainingCatalogLocalizationService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -46,17 +47,20 @@ public class DogStatisticsService {
     private final TrainingSessionRepository trainingSessionRepository;
     private final SessionExerciseRepository sessionExerciseRepository;
     private final ExerciseRepository exerciseRepository;
+    private final TrainingCatalogLocalizationService catalogLocalizationService;
 
     public DogStatisticsService(
             DogService dogService,
             TrainingSessionRepository trainingSessionRepository,
             SessionExerciseRepository sessionExerciseRepository,
-            ExerciseRepository exerciseRepository
+            ExerciseRepository exerciseRepository,
+            TrainingCatalogLocalizationService catalogLocalizationService
     ) {
         this.dogService = dogService;
         this.trainingSessionRepository = trainingSessionRepository;
         this.sessionExerciseRepository = sessionExerciseRepository;
         this.exerciseRepository = exerciseRepository;
+        this.catalogLocalizationService = catalogLocalizationService;
     }
 
     public DogStatisticsResponse getStatistics(UUID dogId) {
@@ -159,8 +163,8 @@ public class DogStatisticsService {
             return List.of();
         }
 
-        Map<UUID, String> exerciseNames = exerciseRepository.findAllById(pointsByExercise.keySet()).stream()
-                .collect(Collectors.toMap(Exercise::getId, Exercise::getName));
+        List<Exercise> exercises = exerciseRepository.findAllById(pointsByExercise.keySet());
+        Map<UUID, String> exerciseNames = catalogLocalizationService.localizedExerciseNames(exercises);
 
         return pointsByExercise.entrySet().stream()
                 .map(entry -> new ExerciseProgressEntry(

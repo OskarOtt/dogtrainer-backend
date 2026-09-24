@@ -2,6 +2,7 @@ package com.oskott.dogtrainerbackend.common.security;
 
 import tools.jackson.databind.ObjectMapper;
 import com.oskott.dogtrainerbackend.common.dto.ErrorResponse;
+import com.oskott.dogtrainerbackend.common.i18n.ApiMessageLocalizer;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -25,10 +26,16 @@ public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final ObjectMapper objectMapper;
+    private final ApiMessageLocalizer messageLocalizer;
 
-    public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter, ObjectMapper objectMapper) {
+    public SecurityConfig(
+            JwtAuthenticationFilter jwtAuthenticationFilter,
+            ObjectMapper objectMapper,
+            ApiMessageLocalizer messageLocalizer
+    ) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
         this.objectMapper = objectMapper;
+        this.messageLocalizer = messageLocalizer;
     }
 
     @Bean
@@ -55,9 +62,13 @@ public class SecurityConfig {
                 .headers(headers -> headers.frameOptions(frame -> frame.disable()))
                 .exceptionHandling(handling -> handling
                         .authenticationEntryPoint((request, response, authException) ->
-                                writeError(response, HttpStatus.UNAUTHORIZED, "Authentication is required", request.getRequestURI()))
+                                writeError(response, HttpStatus.UNAUTHORIZED,
+                                        messageLocalizer.localize("Authentication is required", request),
+                                        request.getRequestURI()))
                         .accessDeniedHandler((request, response, accessDeniedException) ->
-                                writeError(response, HttpStatus.FORBIDDEN, "Access is denied", request.getRequestURI()))
+                                writeError(response, HttpStatus.FORBIDDEN,
+                                        messageLocalizer.localize("Access is denied", request),
+                                        request.getRequestURI()))
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 

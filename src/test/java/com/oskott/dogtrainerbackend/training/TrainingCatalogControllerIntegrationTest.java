@@ -12,6 +12,7 @@ import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
 import java.util.UUID;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -60,6 +61,79 @@ class TrainingCatalogControllerIntegrationTest {
                         .header("Authorization", "Bearer " + accessToken))
                 .andExpect(status().isNotFound());
     }
+
+    @Test
+    void norwegianLocalesUseBokmalAndUnsupportedLocaleFallsBackToEnglish() throws Exception {
+        String accessToken = registerAndGetAccessToken("locale-" + System.nanoTime() + "@example.com");
+
+        for (String locale : List.of("nb-NO", "no", "nn-NO")) {
+            JsonNode categories = readBody(mockMvc.perform(get("/api/v1/training/categories")
+                            .header("Authorization", "Bearer " + accessToken)
+                            .header("Accept-Language", locale))
+                    .andExpect(status().isOk()));
+            assertThat(categories).hasSize(8);
+            assertThat(categories.get(0).get("id").asString())
+                    .isEqualTo("8aadad5d-94a0-4f77-ac3d-2bf62124f89f");
+            assertThat(categories.get(0).get("name").asString()).isEqualTo("Lydighetsprøver");
+        }
+
+        JsonNode english = readBody(mockMvc.perform(get("/api/v1/training/categories")
+                        .header("Authorization", "Bearer " + accessToken)
+                        .header("Accept-Language", "de-DE"))
+                .andExpect(status().isOk()));
+        assertThat(english.get(0).get("name").asString()).isEqualTo("Obedience Trials");
+    }
+
+    @Test
+    void exactObedienceTrialNamesDescriptionsAndContractsAreLocalized() throws Exception {
+        String accessToken = registerAndGetAccessToken("trials-" + System.nanoTime() + "@example.com");
+        String categoryId = "8aadad5d-94a0-4f77-ac3d-2bf62124f89f";
+        JsonNode activities = readBody(mockMvc.perform(get("/api/v1/training/categories/" + categoryId + "/activities")
+                        .header("Authorization", "Bearer " + accessToken)
+                        .header("Accept-Language", "nb"))
+                .andExpect(status().isOk()));
+        assertThat(activities).hasSize(4);
+        assertThat(activities.get(0).get("name").asString()).isEqualTo("Klasse 1");
+
+        JsonNode exercises = readBody(mockMvc.perform(get("/api/v1/training/activities/"
+                                + activities.get(0).get("id").asString() + "/exercises")
+                        .header("Authorization", "Bearer " + accessToken)
+                        .header("Accept-Language", "nb"))
+                .andExpect(status().isOk()));
+        assertThat(exercises).hasSize(8);
+        assertThat(exercises).noneMatch(exercise ->
+                exercise.get("name").asString().equals("Helhetsinntrykk"));
+        assertThat(exercises.get(0).get("name").asString()).isEqualTo("Tilgjengelighet");
+        assertThat(exercises.get(0).get("description").asString()).isEqualTo("Koeffisient: 2");
+        assertThat(exercises.get(0).has("id")).isTrue();
+        assertThat(exercises.get(0).has("activityId")).isTrue();
+        assertThat(exercises.get(0).has("difficulty")).isTrue();
+        assertThat(exercises.get(0).has("instructions")).isTrue();
+    }
+
+    @Test
+    void missingNorwegianTranslationFallsBackToEnglishPerEntity() throws Exception {
+        String accessToken = registerAndGetAccessToken("fallback-" + System.nanoTime() + "@example.com");
+        String translationId = "4578216c-676f-4431-ad50-52655f1986ec";
+        org.springframework.jdbc.core.JdbcTemplate jdbcTemplate =
+                new org.springframework.jdbc.core.JdbcTemplate(dataSource);
+        jdbcTemplate.update("delete from exercise_translations where exercise_id = ?", UUID.fromString(translationId));
+        try {
+            JsonNode exercise = readBody(mockMvc.perform(get("/api/v1/training/exercises/" + translationId)
+                            .header("Authorization", "Bearer " + accessToken)
+                            .header("Accept-Language", "nb"))
+                    .andExpect(status().isOk()));
+            assertThat(exercise.get("name").asString()).isEqualTo("Accessibility");
+        } finally {
+            jdbcTemplate.update("""
+                    insert into exercise_translations (id, exercise_id, locale, name, description)
+                    values (?, ?, 'nb', 'Tilgjengelighet', 'Koeffisient: 2')
+                    """, UUID.fromString(translationId), UUID.fromString(translationId));
+        }
+    }
+
+    @Autowired
+    private javax.sql.DataSource dataSource;
 
     private String registerAndGetAccessToken(String email) throws Exception {
         RegisterRequest registerRequest = new RegisterRequest(email, "Test User", "SuperSecret123");

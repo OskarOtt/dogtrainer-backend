@@ -112,11 +112,14 @@ class PostControllerIntegrationTest {
         String sessionId = createSession(ownerToken, dogId);
 
         // cannot post an in-progress session
-        mockMvc.perform(post("/api/v1/posts/from-session/" + sessionId)
+        JsonNode localizedConflict = readBody(mockMvc.perform(post("/api/v1/posts/from-session/" + sessionId)
                         .header("Authorization", "Bearer " + ownerToken)
+                        .header("Accept-Language", "nb")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{}"))
-                .andExpect(status().isConflict());
+                .andExpect(status().isConflict()));
+        assertThat(localizedConflict.get("message").asString())
+                .isEqualTo("Bare fullførte treningsøkter kan deles som innlegg");
 
         // another user cannot even see the session, let alone post it
         mockMvc.perform(post("/api/v1/posts/from-session/" + sessionId)
@@ -144,6 +147,55 @@ class PostControllerIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{}"))
                 .andExpect(status().isConflict());
+    }
+
+    @Test
+    void automaticSessionCaptionUsesRequestLanguageAndUserContentIsUntouched() throws Exception {
+        String token = registerAndGetAccessToken("caption-" + System.nanoTime() + "@example.com");
+        String dogId = createDog(token, "Buddy");
+        String norwegianSessionId = createSession(token, dogId);
+        mockMvc.perform(post("/api/v1/training-sessions/" + norwegianSessionId + "/complete")
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk());
+
+        JsonNode norwegianPost = readBody(mockMvc.perform(post("/api/v1/posts/from-session/" + norwegianSessionId)
+                        .header("Authorization", "Bearer " + token)
+                        .header("Accept-Language", "nb")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}"))
+                .andExpect(status().isCreated()));
+        assertThat(norwegianPost.get("content").asString()).contains("fullførte").contains("treningsøkt");
+
+        String authoredSessionId = createSession(token, dogId);
+        mockMvc.perform(post("/api/v1/training-sessions/" + authoredSessionId + "/complete")
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk());
+        JsonNode authored = readBody(mockMvc.perform(post("/api/v1/posts/from-session/" + authoredSessionId)
+                        .header("Authorization", "Bearer " + token)
+                        .header("Accept-Language", "nb")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"content\":\"My own caption\"}"))
+                .andExpect(status().isCreated()));
+        assertThat(authored.get("content").asString()).isEqualTo("My own caption");
+    }
+
+    @Test
+    void errorsAndValidationUseRequestLanguageWithoutChangingContract() throws Exception {
+        JsonNode validation = readBody(mockMvc.perform(post("/api/v1/auth/register")
+                        .header("Accept-Language", "no")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"email\":\"bad\",\"name\":\"\",\"password\":\"x\"}"))
+                .andExpect(status().isBadRequest()));
+        assertThat(validation.get("message").asString()).isEqualTo("Valideringen mislyktes");
+        assertThat(validation.get("status").asInt()).isEqualTo(400);
+        assertThat(validation.get("fieldErrors").isArray()).isTrue();
+        assertThat(validation.get("fieldErrors").toString()).contains("må");
+
+        JsonNode unauthorized = readBody(mockMvc.perform(get("/api/v1/training/categories")
+                        .header("Accept-Language", "nn"))
+                .andExpect(status().isUnauthorized()));
+        assertThat(unauthorized.get("message").asString()).isEqualTo("Autentisering kreves");
+        assertThat(unauthorized.has("code")).isTrue();
     }
 
     @Test

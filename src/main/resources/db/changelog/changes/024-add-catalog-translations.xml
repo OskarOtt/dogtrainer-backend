@@ -1,0 +1,104 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.29.xsd">
+
+    <changeSet id="024-create-catalog-translation-tables" author="copilot">
+        <createTable tableName="training_category_translations">
+            <column name="id" type="UUID">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="category_id" type="UUID">
+                <constraints nullable="false"
+                             foreignKeyName="fk_category_translations_category"
+                             references="training_categories(id)"
+                             deleteCascade="true"/>
+            </column>
+            <column name="locale" type="VARCHAR(10)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="VARCHAR(1024)"/>
+        </createTable>
+        <addUniqueConstraint tableName="training_category_translations"
+                             columnNames="category_id, locale"
+                             constraintName="uc_category_translations_entity_locale"/>
+        <createIndex tableName="training_category_translations" indexName="idx_category_translations_locale_entity">
+            <column name="locale"/>
+            <column name="category_id"/>
+        </createIndex>
+
+        <createTable tableName="activity_translations">
+            <column name="id" type="UUID">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="activity_id" type="UUID">
+                <constraints nullable="false"
+                             foreignKeyName="fk_activity_translations_activity"
+                             references="activities(id)"
+                             deleteCascade="true"/>
+            </column>
+            <column name="locale" type="VARCHAR(10)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="VARCHAR(1024)"/>
+        </createTable>
+        <addUniqueConstraint tableName="activity_translations"
+                             columnNames="activity_id, locale"
+                             constraintName="uc_activity_translations_entity_locale"/>
+        <createIndex tableName="activity_translations" indexName="idx_activity_translations_locale_entity">
+            <column name="locale"/>
+            <column name="activity_id"/>
+        </createIndex>
+
+        <createTable tableName="exercise_translations">
+            <column name="id" type="UUID">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="exercise_id" type="UUID">
+                <constraints nullable="false"
+                             foreignKeyName="fk_exercise_translations_exercise"
+                             references="exercises(id)"
+                             deleteCascade="true"/>
+            </column>
+            <column name="locale" type="VARCHAR(10)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="VARCHAR(2048)"/>
+            <column name="instructions" type="VARCHAR(4096)"/>
+        </createTable>
+        <addUniqueConstraint tableName="exercise_translations"
+                             columnNames="exercise_id, locale"
+                             constraintName="uc_exercise_translations_entity_locale"/>
+        <createIndex tableName="exercise_translations" indexName="idx_exercise_translations_locale_entity">
+            <column name="locale"/>
+            <column name="exercise_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="024-seed-bokmal-catalog-translations" author="copilot" context="!no-seed">
+        <loadData tableName="training_category_translations"
+                  file="db/changelog/data/training-category-translations-nb.csv"
+                  relativeToChangelogFile="false"
+                  encoding="UTF-8"/>
+        <loadData tableName="activity_translations"
+                  file="db/changelog/data/activity-translations-nb.csv"
+                  relativeToChangelogFile="false"
+                  encoding="UTF-8"/>
+        <loadData tableName="exercise_translations"
+                  file="db/changelog/data/exercise-translations-nb.csv"
+                  relativeToChangelogFile="false"
+                  encoding="UTF-8"/>
+    </changeSet>
+
+</databaseChangeLog>

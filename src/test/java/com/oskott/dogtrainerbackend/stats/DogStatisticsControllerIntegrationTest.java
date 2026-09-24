@@ -61,11 +61,14 @@ class DogStatisticsControllerIntegrationTest {
         assertThat(statistics.get("averageSuccessRate").asDouble()).isEqualTo(0.5);
 
         JsonNode progress = readBody(mockMvc.perform(get("/api/v1/dogs/" + dogId + "/progress")
-                        .header("Authorization", "Bearer " + ownerToken))
+                        .header("Authorization", "Bearer " + ownerToken)
+                        .header("Accept-Language", "nn"))
                 .andExpect(status().isOk()));
         assertThat(progress.get("history")).hasSize(1);
         assertThat(progress.get("averageSuccessRate").asDouble()).isEqualTo(0.5);
         assertThat(progress.get("exerciseProgress")).hasSize(1);
+        assertThat(progress.get("exerciseProgress").get(0).get("exerciseName").asString())
+                .isEqualTo("Tilgjengelighet");
         assertThat(progress.get("exerciseProgress").get(0).get("points")).hasSize(1);
 
         // another user cannot see this dog's statistics/progress

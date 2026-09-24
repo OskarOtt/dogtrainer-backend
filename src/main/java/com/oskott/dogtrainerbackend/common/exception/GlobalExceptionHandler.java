@@ -1,6 +1,7 @@
 package com.oskott.dogtrainerbackend.common.exception;
 
 import com.oskott.dogtrainerbackend.common.dto.ErrorResponse;
+import com.oskott.dogtrainerbackend.common.i18n.ApiMessageLocalizer;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +19,12 @@ import java.util.List;
  */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    private final ApiMessageLocalizer messageLocalizer;
+
+    public GlobalExceptionHandler(ApiMessageLocalizer messageLocalizer) {
+        this.messageLocalizer = messageLocalizer;
+    }
 
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleNotFound(ResourceNotFoundException ex, HttpServletRequest request) {
@@ -50,7 +57,7 @@ public class GlobalExceptionHandler {
                 ex.getStatus().value(),
                 ex.getStatus().getReasonPhrase(),
                 ex.getCode(),
-                ex.getMessage(),
+                messageLocalizer.localize(ex.getMessage(), request),
                 request.getRequestURI()
         );
         return ResponseEntity.status(ex.getStatus()).body(body);
@@ -59,12 +66,14 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidation(MethodArgumentNotValidException ex, HttpServletRequest request) {
         List<ErrorResponse.FieldError> fieldErrors = ex.getBindingResult().getFieldErrors().stream()
-                .map(fe -> new ErrorResponse.FieldError(fe.getField(), fe.getDefaultMessage()))
+                .map(fe -> new ErrorResponse.FieldError(
+                        fe.getField(),
+                        messageLocalizer.localize(fe.getDefaultMessage(), request)))
                 .toList();
         ErrorResponse body = ErrorResponse.of(
                 HttpStatus.BAD_REQUEST.value(),
                 HttpStatus.BAD_REQUEST.getReasonPhrase(),
-                "Validation failed",
+                messageLocalizer.localize("Validation failed", request),
                 request.getRequestURI(),
                 fieldErrors
         );
@@ -77,7 +86,11 @@ public class GlobalExceptionHandler {
     }
 
     private ResponseEntity<ErrorResponse> build(HttpStatus status, String message, HttpServletRequest request) {
-        ErrorResponse body = ErrorResponse.of(status.value(), status.getReasonPhrase(), message, request.getRequestURI());
+        ErrorResponse body = ErrorResponse.of(
+                status.value(),
+                status.getReasonPhrase(),
+                messageLocalizer.localize(message, request),
+                request.getRequestURI());
         return ResponseEntity.status(status).body(body);
     }
 }

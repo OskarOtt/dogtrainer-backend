@@ -84,6 +84,27 @@ class TrainingPlanControllerIntegrationTest {
         assertThat(afterDelete).isEmpty();
     }
 
+    @Test
+    void planExerciseSummariesUseRequestLocale() throws Exception {
+        String token = registerAndGetAccessToken("plan-locale-" + System.nanoTime() + "@example.com");
+        String dogId = createDog(token, "Milo");
+        String exerciseId = "4578216c-676f-4431-ad50-52655f1986ec";
+
+        JsonNode created = readBody(mockMvc.perform(post("/api/v1/dogs/" + dogId + "/training-plans")
+                        .header("Authorization", "Bearer " + token)
+                        .header("Accept-Language", "no")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"name\":\"Plan\",\"exerciseIds\":[\"" + exerciseId + "\"]}"))
+                .andExpect(status().isCreated()));
+        assertThat(created.get("exercises").get(0).get("name").asString()).isEqualTo("Tilgjengelighet");
+
+        JsonNode english = readBody(mockMvc.perform(get("/api/v1/training-plans/" + created.get("id").asString())
+                        .header("Authorization", "Bearer " + token)
+                        .header("Accept-Language", "en"))
+                .andExpect(status().isOk()));
+        assertThat(english.get("exercises").get(0).get("name").asString()).isEqualTo("Accessibility");
+    }
+
     private String firstExerciseId(String accessToken) throws Exception {
         JsonNode categories = readBody(mockMvc.perform(get("/api/v1/training/categories")
                         .header("Authorization", "Bearer " + accessToken))

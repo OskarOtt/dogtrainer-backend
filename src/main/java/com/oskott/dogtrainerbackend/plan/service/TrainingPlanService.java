@@ -13,16 +13,17 @@ import com.oskott.dogtrainerbackend.plan.entity.TrainingPlan;
 import com.oskott.dogtrainerbackend.plan.repository.TrainingPlanRepository;
 import com.oskott.dogtrainerbackend.training.entity.Exercise;
 import com.oskott.dogtrainerbackend.training.repository.ExerciseRepository;
+import com.oskott.dogtrainerbackend.training.service.TrainingCatalogLocalizationService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collections;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.UUID;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -33,26 +34,31 @@ public class TrainingPlanService {
     private final DogRepository dogRepository;
     private final ExerciseRepository exerciseRepository;
     private final CurrentUserProvider currentUserProvider;
+    private final TrainingCatalogLocalizationService catalogLocalizationService;
 
     public TrainingPlanService(
             TrainingPlanRepository trainingPlanRepository,
             DogService dogService,
             DogRepository dogRepository,
             ExerciseRepository exerciseRepository,
-            CurrentUserProvider currentUserProvider
+            CurrentUserProvider currentUserProvider,
+            TrainingCatalogLocalizationService catalogLocalizationService
     ) {
         this.trainingPlanRepository = trainingPlanRepository;
         this.dogService = dogService;
         this.dogRepository = dogRepository;
         this.exerciseRepository = exerciseRepository;
         this.currentUserProvider = currentUserProvider;
+        this.catalogLocalizationService = catalogLocalizationService;
     }
 
     @Transactional(readOnly = true)
     public List<TrainingPlanResponse> listPlansForDog(UUID dogId) {
         dogService.getOwnedDog(dogId);
-        return trainingPlanRepository.findAllByDogIdOrderByStartDateDesc(dogId).stream()
-                .map(plan -> TrainingPlanResponse.from(plan, resolveExercises(plan)))
+        List<TrainingPlan> plans = trainingPlanRepository.findAllByDogIdOrderByStartDateDesc(dogId);
+        Map<UUID, ExerciseSummary> exercisesById = resolveExerciseSummaries(plans);
+        return plans.stream()
+                .map(plan -> TrainingPlanResponse.from(plan, orderedExercises(plan, exercisesById)))
                 .toList();
     }
 
@@ -69,8 +75,13 @@ public class TrainingPlanService {
         }
         Map<UUID, String> dogNamesById = dogs.stream().collect(Collectors.toMap(Dog::getId, Dog::getName));
         List<UUID> dogIds = dogs.stream().map(Dog::getId).toList();
-        return trainingPlanRepository.findAllByDogIdInOrderByStartDateDesc(dogIds).stream()
-                .map(plan -> TrainingPlanResponse.from(plan, resolveExercises(plan), dogNamesById.get(plan.getDogId())))
+        List<TrainingPlan> plans = trainingPlanRepository.findAllByDogIdInOrderByStartDateDesc(dogIds);
+        Map<UUID, ExerciseSummary> exercisesById = resolveExerciseSummaries(plans);
+        return plans.stream()
+                .map(plan -> TrainingPlanResponse.from(
+                        plan,
+                        orderedExercises(plan, exercisesById),
+                        dogNamesById.get(plan.getDogId())))
                 .toList();
     }
 
@@ -149,15 +160,38 @@ public class TrainingPlanService {
      * the user picked them in.
      */
     private List<ExerciseSummary> resolveExercises(TrainingPlan plan) {
+        return orderedExercises(plan, resolveExerciseSummaries(List.of(plan)));
+    }
+
+    private Map<UUID, ExerciseSummary> resolveExerciseSummaries(Collection<TrainingPlan> plans) {
+        List<UUID> exerciseIds = plans.stream()
+                .flatMap(plan -> plan.getExerciseIds().stream())
+                .distinct()
+                .toList();
+        if (exerciseIds.isEmpty()) {
+            return Map.of();
+        }
+        List<Exercise> exercises = exerciseRepository.findAllByIdIn(exerciseIds);
+        Map<UUID, String> localizedNames = catalogLocalizationService.localizedExerciseNames(exercises);
+        return exercises.stream().collect(Collectors.toMap(
+                Exercise::getId,
+                exercise -> new ExerciseSummary(
+                        exercise.getId(),
+                        exercise.getActivityId(),
+                        localizedNames.getOrDefault(exercise.getId(), exercise.getName()))
+        ));
+    }
+
+    private List<ExerciseSummary> orderedExercises(
+            TrainingPlan plan,
+            Map<UUID, ExerciseSummary> exercisesById
+    ) {
         if (plan.getExerciseIds().isEmpty()) {
             return List.of();
         }
-        Map<UUID, Exercise> exercisesById = exerciseRepository.findAllByIdIn(plan.getExerciseIds()).stream()
-                .collect(Collectors.toMap(Exercise::getId, Function.identity()));
         return plan.getExerciseIds().stream()
                 .map(exercisesById::get)
                 .filter(Objects::nonNull)
-                .map(ExerciseSummary::from)
                 .toList();
     }
 }
