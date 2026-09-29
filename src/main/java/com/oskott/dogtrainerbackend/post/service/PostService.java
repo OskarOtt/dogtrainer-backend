@@ -14,6 +14,7 @@ import com.oskott.dogtrainerbackend.follow.service.FollowService;
 import com.oskott.dogtrainerbackend.like.service.LikeService;
 import com.oskott.dogtrainerbackend.moderation.service.ModerationService;
 import com.oskott.dogtrainerbackend.post.dto.CreatePostFromSessionRequest;
+import com.oskott.dogtrainerbackend.post.dto.CreatePostFromActivityRequest;
 import com.oskott.dogtrainerbackend.post.dto.CreatePostRequest;
 import com.oskott.dogtrainerbackend.post.dto.PostMediaConfirmRequest;
 import com.oskott.dogtrainerbackend.post.dto.PostPageResponse;
@@ -29,6 +30,10 @@ import com.oskott.dogtrainerbackend.storage.dto.UploadUrlResponse;
 import com.oskott.dogtrainerbackend.training.dto.TrainingSessionResponse;
 import com.oskott.dogtrainerbackend.training.entity.SessionStatus;
 import com.oskott.dogtrainerbackend.training.service.TrainingSessionService;
+import com.oskott.dogtrainerbackend.activity.dto.PhysicalActivityResponse;
+import com.oskott.dogtrainerbackend.activity.entity.ActivityStatus;
+import com.oskott.dogtrainerbackend.activity.entity.ActivityType;
+import com.oskott.dogtrainerbackend.activity.service.PhysicalActivityService;
 import com.oskott.dogtrainerbackend.user.entity.User;
 import com.oskott.dogtrainerbackend.user.repository.UserRepository;
 import org.springframework.data.domain.PageRequest;
@@ -55,6 +60,7 @@ public class PostService {
     private final DogRepository dogRepository;
     private final DogService dogService;
     private final TrainingSessionService trainingSessionService;
+    private final PhysicalActivityService physicalActivityService;
     private final FollowService followService;
     private final ModerationService moderationService;
     private final CurrentUserProvider currentUserProvider;
@@ -68,6 +74,7 @@ public class PostService {
             DogRepository dogRepository,
             DogService dogService,
             TrainingSessionService trainingSessionService,
+            PhysicalActivityService physicalActivityService,
             FollowService followService,
             ModerationService moderationService,
             CurrentUserProvider currentUserProvider,
@@ -80,6 +87,7 @@ public class PostService {
         this.dogRepository = dogRepository;
         this.dogService = dogService;
         this.trainingSessionService = trainingSessionService;
+        this.physicalActivityService = physicalActivityService;
         this.followService = followService;
         this.moderationService = moderationService;
         this.currentUserProvider = currentUserProvider;
@@ -121,9 +129,62 @@ public class PostService {
         return toResponse(post);
     }
 
+    @Transactional
+    public PostResponse createPostFromActivity(UUID activityId, CreatePostFromActivityRequest request) {
+        // getActivity() enforces that the activity's dog belongs to the current user.
+        PhysicalActivityResponse activity = physicalActivityService.getActivity(activityId);
+        if (activity.status() != ActivityStatus.COMPLETED) {
+            throw new BusinessRuleException("Only completed physical activities can be shared as a post");
+        }
+        if (postRepository.existsByPhysicalActivityId(activityId)) {
+            throw new BusinessRuleException("This physical activity has already been posted");
+        }
+
+        UUID authorId = currentUserProvider.getCurrentUserId();
+        Dog dog = dogService.getOwnedDog(activity.dogId());
+        String content = request.content() != null && !request.content().isBlank()
+                ? request.content()
+                : buildActivityCaption(dog, activity);
+
+        Post post = new Post(UUID.randomUUID(), authorId, activity.dogId(), null, activityId, content, null, Instant.now());
+        postRepository.save(post);
+        return toResponse(post);
+    }
+
     @Transactional(readOnly = true)
     public PostResponse getPost(UUID postId) {
         return toResponse(getPostOrThrow(postId));
+    }
+
+    /**
+     * Returns a preview of the training session shared through this post. Posts are publicly
+     * readable ({@link #getPost}), so this intentionally bypasses the owner check normally
+     * enforced by {@code TrainingSessionService.getSession} - but it only ever returns the one
+     * session actually linked to this specific post, so it can't be used to fetch an arbitrary
+     * session by id.
+     */
+    @Transactional(readOnly = true)
+    public TrainingSessionResponse getPostTrainingSession(UUID postId) {
+        Post post = getPostOrThrow(postId);
+        UUID sessionId = post.getTrainingSessionId();
+        if (sessionId == null) {
+            throw ResourceNotFoundException.forEntity("TrainingSession", postId);
+        }
+        return trainingSessionService.getSessionById(sessionId);
+    }
+
+    /**
+     * Returns a preview of the physical activity shared through this post - the activity
+     * analog of {@link #getPostTrainingSession}, with the same bypass-owner-check reasoning.
+     */
+    @Transactional(readOnly = true)
+    public PhysicalActivityResponse getPostPhysicalActivity(UUID postId) {
+        Post post = getPostOrThrow(postId);
+        UUID activityId = post.getPhysicalActivityId();
+        if (activityId == null) {
+            throw ResourceNotFoundException.forEntity("PhysicalActivity", postId);
+        }
+        return physicalActivityService.getActivityById(activityId);
     }
 
     @Transactional
@@ -200,6 +261,29 @@ public class PostService {
                 .formatted(dog.getName(), session.durationMinutes(), exercisePart);
     }
 
+    private String buildActivityCaption(Dog dog, PhysicalActivityResponse activity) {
+        String activityLabel = activityLabel(activity.activityType());
+        if (SupportedLocale.isBokmal()) {
+            return "%s fullførte %d minutter med %s!"
+                    .formatted(dog.getName(), activity.durationMinutes(), activityLabel);
+        }
+        return "%s finished %d minutes of %s!"
+                .formatted(dog.getName(), activity.durationMinutes(), activityLabel);
+    }
+
+    private String activityLabel(ActivityType activityType) {
+        boolean bokmal = SupportedLocale.isBokmal();
+        return switch (activityType) {
+            case WALK -> bokmal ? "gåtur" : "a walk";
+            case RUN -> bokmal ? "løpetur" : "a run";
+            case SKI -> bokmal ? "skitur" : "skiing";
+            case STRENGTH_TRAINING -> bokmal ? "styrketrening" : "strength training";
+            case SWIM -> bokmal ? "svømming" : "swimming";
+            case HIKE -> bokmal ? "fottur" : "hiking";
+            case PLAY_SESSION -> bokmal ? "lek" : "play";
+        };
+    }
+
     /**
      * {@code fetched} may contain one extra row beyond {@code pageSize} (the caller over-fetches
      * by one) purely to detect whether another page exists, without a separate count query.
@@ -262,6 +346,7 @@ public class PostService {
                 post.getDogId(),
                 dog != null ? dog.getName() : null,
                 post.getTrainingSessionId(),
+                post.getPhysicalActivityId(),
                 post.getContent(),
                 post.getImageUrl(),
                 post.getCreatedAt(),

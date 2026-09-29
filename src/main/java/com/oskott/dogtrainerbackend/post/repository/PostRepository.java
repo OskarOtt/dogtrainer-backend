@@ -14,6 +14,8 @@ public interface PostRepository extends JpaRepository<Post, UUID> {
 
     boolean existsByTrainingSessionId(UUID trainingSessionId);
 
+    boolean existsByPhysicalActivityId(UUID physicalActivityId);
+
     /**
      * Keyset (cursor) pagination, first page: no cursor params at all, so Postgres never has to
      * infer a type for a null-valued parameter. Split out from {@link #findPageAfterCursor} to

@@ -180,6 +180,107 @@ class PostControllerIntegrationTest {
     }
 
     @Test
+    void anyUserCanPreviewTheTrainingSessionSharedThroughAPostButNotAnUnrelatedSession() throws Exception {
+        String ownerToken = registerAndGetAccessToken("session-preview-owner-" + System.nanoTime() + "@example.com");
+        String otherToken = registerAndGetAccessToken("session-preview-other-" + System.nanoTime() + "@example.com");
+        String dogId = createDog(ownerToken, "Buddy");
+        String sessionId = createSession(ownerToken, dogId);
+        mockMvc.perform(post("/api/v1/training-sessions/" + sessionId + "/complete")
+                        .header("Authorization", "Bearer " + ownerToken))
+                .andExpect(status().isOk());
+        JsonNode postFromSession = readBody(mockMvc.perform(post("/api/v1/posts/from-session/" + sessionId)
+                        .header("Authorization", "Bearer " + ownerToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}"))
+                .andExpect(status().isCreated()));
+        String postId = postFromSession.get("id").asString();
+
+        // the session itself is still owner-only when fetched directly
+        mockMvc.perform(get("/api/v1/training-sessions/" + sessionId)
+                        .header("Authorization", "Bearer " + otherToken))
+                .andExpect(status().isForbidden());
+
+        // but any user who can see the post can preview the session shared through it
+        JsonNode preview = readBody(mockMvc.perform(get("/api/v1/posts/" + postId + "/training-session")
+                        .header("Authorization", "Bearer " + otherToken))
+                .andExpect(status().isOk()));
+        assertThat(preview.get("id").asString()).isEqualTo(sessionId);
+        assertThat(preview.get("dogId").asString()).isEqualTo(dogId);
+
+        // a post with no linked session has no preview
+        String standalonePostId = createStandalonePost(ownerToken, "No session here");
+        mockMvc.perform(get("/api/v1/posts/" + standalonePostId + "/training-session")
+                        .header("Authorization", "Bearer " + otherToken))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void postFromActivityRequiresCompletionAllowsOneOnlyAndIsPreviewableThroughThePost() throws Exception {
+        String ownerToken = registerAndGetAccessToken("activity-owner-" + System.nanoTime() + "@example.com");
+        String otherToken = registerAndGetAccessToken("activity-other-" + System.nanoTime() + "@example.com");
+        String dogId = createDog(ownerToken, "Buddy");
+        String activityId = createActivity(ownerToken, dogId, "WALK");
+
+        // cannot post an in-progress activity
+        JsonNode localizedConflict = readBody(mockMvc.perform(post("/api/v1/posts/from-activity/" + activityId)
+                        .header("Authorization", "Bearer " + ownerToken)
+                        .header("Accept-Language", "nb")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}"))
+                .andExpect(status().isConflict()));
+        assertThat(localizedConflict.get("message").asString())
+                .isEqualTo("Bare fullførte aktiviteter kan deles som innlegg");
+
+        // another user cannot even see the activity, let alone post it
+        mockMvc.perform(post("/api/v1/posts/from-activity/" + activityId)
+                        .header("Authorization", "Bearer " + otherToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}"))
+                .andExpect(status().isForbidden());
+
+        mockMvc.perform(post("/api/v1/physical-activities/" + activityId + "/complete")
+                        .header("Authorization", "Bearer " + ownerToken))
+                .andExpect(status().isOk());
+
+        JsonNode postFromActivity = readBody(mockMvc.perform(post("/api/v1/posts/from-activity/" + activityId)
+                        .header("Authorization", "Bearer " + ownerToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}"))
+                .andExpect(status().isCreated()));
+        assertThat(postFromActivity.get("physicalActivityId").asString()).isEqualTo(activityId);
+        assertThat(postFromActivity.get("trainingSessionId").isNull()).isTrue();
+        assertThat(postFromActivity.get("dogId").asString()).isEqualTo(dogId);
+        assertThat(postFromActivity.get("content").asString()).contains("Buddy");
+        String postId = postFromActivity.get("id").asString();
+
+        // an activity can only ever be posted once
+        mockMvc.perform(post("/api/v1/posts/from-activity/" + activityId)
+                        .header("Authorization", "Bearer " + ownerToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}"))
+                .andExpect(status().isConflict());
+
+        // the activity itself is still owner-only when fetched directly
+        mockMvc.perform(get("/api/v1/physical-activities/" + activityId)
+                        .header("Authorization", "Bearer " + otherToken))
+                .andExpect(status().isForbidden());
+
+        // but any user who can see the post can preview the activity shared through it
+        JsonNode preview = readBody(mockMvc.perform(get("/api/v1/posts/" + postId + "/physical-activity")
+                        .header("Authorization", "Bearer " + otherToken))
+                .andExpect(status().isOk()));
+        assertThat(preview.get("id").asString()).isEqualTo(activityId);
+        assertThat(preview.get("dogId").asString()).isEqualTo(dogId);
+
+        // a post with no linked activity has no preview
+        String standalonePostId = createStandalonePost(ownerToken, "No activity here");
+        mockMvc.perform(get("/api/v1/posts/" + standalonePostId + "/physical-activity")
+                        .header("Authorization", "Bearer " + otherToken))
+                .andExpect(status().isNotFound());
+    }
+
+
+    @Test
     void errorsAndValidationUseRequestLanguageWithoutChangingContract() throws Exception {
         JsonNode validation = readBody(mockMvc.perform(post("/api/v1/auth/register")
                         .header("Accept-Language", "no")
@@ -341,6 +442,15 @@ class PostControllerIntegrationTest {
                         .content("{}"))
                 .andExpect(status().isCreated()));
         return session.get("id").asString();
+    }
+
+    private String createActivity(String accessToken, String dogId, String activityType) throws Exception {
+        JsonNode activity = readBody(mockMvc.perform(post("/api/v1/dogs/" + dogId + "/physical-activities")
+                        .header("Authorization", "Bearer " + accessToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"activityType\":\"" + activityType + "\"}"))
+                .andExpect(status().isCreated()));
+        return activity.get("id").asString();
     }
 
     /**

@@ -11,6 +11,7 @@ public record PostResponse(
         UUID dogId,
         String dogName,
         UUID trainingSessionId,
+        UUID physicalActivityId,
         String content,
         String imageUrl,
         Instant createdAt,

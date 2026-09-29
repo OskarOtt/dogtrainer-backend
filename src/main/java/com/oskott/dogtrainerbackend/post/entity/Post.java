@@ -24,6 +24,9 @@ public class Post {
     @Column(name = "training_session_id")
     private UUID trainingSessionId;
 
+    @Column(name = "physical_activity_id")
+    private UUID physicalActivityId;
+
     @Column(nullable = false)
     private String content;
 
@@ -38,10 +41,24 @@ public class Post {
     }
 
     public Post(UUID id, UUID authorId, UUID dogId, UUID trainingSessionId, String content, String imageUrl, Instant createdAt) {
+        this(id, authorId, dogId, trainingSessionId, null, content, imageUrl, createdAt);
+    }
+
+    public Post(
+            UUID id,
+            UUID authorId,
+            UUID dogId,
+            UUID trainingSessionId,
+            UUID physicalActivityId,
+            String content,
+            String imageUrl,
+            Instant createdAt
+    ) {
         this.id = id;
         this.authorId = authorId;
         this.dogId = dogId;
         this.trainingSessionId = trainingSessionId;
+        this.physicalActivityId = physicalActivityId;
         this.content = content;
         this.imageUrl = imageUrl;
         this.createdAt = createdAt;
@@ -61,6 +78,10 @@ public class Post {
 
     public UUID getTrainingSessionId() {
         return trainingSessionId;
+    }
+
+    public UUID getPhysicalActivityId() {
+        return physicalActivityId;
     }
 
     public String getContent() {

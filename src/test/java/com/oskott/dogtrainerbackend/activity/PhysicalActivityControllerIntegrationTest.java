@@ -1,0 +1,145 @@
+package com.oskott.dogtrainerbackend.activity;
+
+import com.oskott.dogtrainerbackend.auth.dto.RegisterRequest;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+@SpringBootTest
+@AutoConfigureMockMvc
+class PhysicalActivityControllerIntegrationTest {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    @Test
+    void fullPhysicalActivityFlowWorksEndToEndAndIsOwnershipScoped() throws Exception {
+        String ownerToken = registerAndGetAccessToken("activity-owner-" + System.nanoTime() + "@example.com");
+        String otherToken = registerAndGetAccessToken("activity-other-" + System.nanoTime() + "@example.com");
+        String dogId = createDog(ownerToken, "Buddy");
+
+        // no activities yet
+        JsonNode emptyActivities = readBody(mockMvc.perform(get("/api/v1/dogs/" + dogId + "/physical-activities")
+                        .header("Authorization", "Bearer " + ownerToken))
+                .andExpect(status().isOk()));
+        assertThat(emptyActivities).isEmpty();
+
+        // start an activity with a default title
+        JsonNode activity = readBody(mockMvc.perform(post("/api/v1/dogs/" + dogId + "/physical-activities")
+                        .header("Authorization", "Bearer " + ownerToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"activityType\":\"WALK\"}"))
+                .andExpect(status().isCreated()));
+        String activityId = activity.get("id").asString();
+        assertThat(activity.get("status").asString()).isEqualTo("IN_PROGRESS");
+        assertThat(activity.get("activityType").asString()).isEqualTo("WALK");
+        assertThat(activity.get("title").asString()).isEqualTo("Walk");
+
+        // another user cannot see or act on this activity
+        mockMvc.perform(get("/api/v1/physical-activities/" + activityId)
+                        .header("Authorization", "Bearer " + otherToken))
+                .andExpect(status().isForbidden());
+
+        // update title/notes
+        JsonNode updated = readBody(mockMvc.perform(put("/api/v1/physical-activities/" + activityId)
+                        .header("Authorization", "Bearer " + ownerToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"title\":\"Evening walk\",\"notes\":\"Sunny out\"}"))
+                .andExpect(status().isOk()));
+        assertThat(updated.get("title").asString()).isEqualTo("Evening walk");
+        assertThat(updated.get("notes").asString()).isEqualTo("Sunny out");
+
+        // pause, then resume
+        JsonNode paused = readBody(mockMvc.perform(post("/api/v1/physical-activities/" + activityId + "/pause")
+                        .header("Authorization", "Bearer " + ownerToken))
+                .andExpect(status().isOk()));
+        assertThat(paused.get("status").asString()).isEqualTo("PAUSED");
+        assertThat(paused.get("pausedAt").isNull()).isFalse();
+
+        // cannot pause an already-paused activity
+        mockMvc.perform(post("/api/v1/physical-activities/" + activityId + "/pause")
+                        .header("Authorization", "Bearer " + ownerToken))
+                .andExpect(status().isConflict());
+
+        JsonNode resumed = readBody(mockMvc.perform(post("/api/v1/physical-activities/" + activityId + "/resume")
+                        .header("Authorization", "Bearer " + ownerToken))
+                .andExpect(status().isOk()));
+        assertThat(resumed.get("status").asString()).isEqualTo("IN_PROGRESS");
+        assertThat(resumed.get("pausedAt").isNull()).isTrue();
+
+        // cannot resume an activity that isn't paused
+        mockMvc.perform(post("/api/v1/physical-activities/" + activityId + "/resume")
+                        .header("Authorization", "Bearer " + ownerToken))
+                .andExpect(status().isConflict());
+
+        // complete it
+        JsonNode completed = readBody(mockMvc.perform(post("/api/v1/physical-activities/" + activityId + "/complete")
+                        .header("Authorization", "Bearer " + ownerToken))
+                .andExpect(status().isOk()));
+        assertThat(completed.get("status").asString()).isEqualTo("COMPLETED");
+        assertThat(completed.get("completedAt").isNull()).isFalse();
+        assertThat(completed.get("durationMinutes").asInt()).isGreaterThanOrEqualTo(1);
+
+        // cannot complete an already-completed activity again
+        mockMvc.perform(post("/api/v1/physical-activities/" + activityId + "/complete")
+                        .header("Authorization", "Bearer " + ownerToken))
+                .andExpect(status().isConflict());
+
+        // a second activity can be cancelled
+        JsonNode secondActivity = readBody(mockMvc.perform(post("/api/v1/dogs/" + dogId + "/physical-activities")
+                        .header("Authorization", "Bearer " + ownerToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"activityType\":\"RUN\",\"title\":\"Morning run\"}"))
+                .andExpect(status().isCreated()));
+        String secondActivityId = secondActivity.get("id").asString();
+        assertThat(secondActivity.get("title").asString()).isEqualTo("Morning run");
+        JsonNode cancelled = readBody(mockMvc.perform(post("/api/v1/physical-activities/" + secondActivityId + "/cancel")
+                        .header("Authorization", "Bearer " + ownerToken))
+                .andExpect(status().isOk()));
+        assertThat(cancelled.get("status").asString()).isEqualTo("CANCELLED");
+
+        // dog's activity list now has both activities
+        JsonNode allActivities = readBody(mockMvc.perform(get("/api/v1/dogs/" + dogId + "/physical-activities")
+                        .header("Authorization", "Bearer " + ownerToken))
+                .andExpect(status().isOk()));
+        assertThat(allActivities).hasSize(2);
+    }
+
+    private String createDog(String accessToken, String name) throws Exception {
+        JsonNode dog = readBody(mockMvc.perform(post("/api/v1/dogs")
+                        .header("Authorization", "Bearer " + accessToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"name\":\"" + name + "\"}"))
+                .andExpect(status().isCreated()));
+        return dog.get("id").asString();
+    }
+
+    private String registerAndGetAccessToken(String email) throws Exception {
+        RegisterRequest registerRequest = new RegisterRequest(email, "Test User", "SuperSecret123");
+        JsonNode body = readBody(mockMvc.perform(post("/api/v1/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(registerRequest)))
+                .andExpect(status().isCreated()));
+        return body.get("accessToken").asString();
+    }
+
+    private JsonNode readBody(ResultActions resultActions) throws Exception {
+        String content = resultActions.andReturn().getResponse().getContentAsString();
+        return objectMapper.readTree(content);
+    }
+}

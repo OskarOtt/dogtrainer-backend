@@ -1,6 +1,7 @@
 package com.oskott.dogtrainerbackend.post.controller;
 
 import com.oskott.dogtrainerbackend.post.dto.CreatePostFromSessionRequest;
+import com.oskott.dogtrainerbackend.post.dto.CreatePostFromActivityRequest;
 import com.oskott.dogtrainerbackend.post.dto.CreatePostRequest;
 import com.oskott.dogtrainerbackend.post.dto.PostMediaConfirmRequest;
 import com.oskott.dogtrainerbackend.post.dto.PostPageResponse;
@@ -8,6 +9,8 @@ import com.oskott.dogtrainerbackend.post.dto.PostResponse;
 import com.oskott.dogtrainerbackend.post.service.PostService;
 import com.oskott.dogtrainerbackend.storage.dto.UploadUrlRequest;
 import com.oskott.dogtrainerbackend.storage.dto.UploadUrlResponse;
+import com.oskott.dogtrainerbackend.training.dto.TrainingSessionResponse;
+import com.oskott.dogtrainerbackend.activity.dto.PhysicalActivityResponse;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -46,6 +49,14 @@ public class PostController {
         return ResponseEntity.status(HttpStatus.CREATED).body(postService.createPostFromSession(sessionId, request));
     }
 
+    @PostMapping("/posts/from-activity/{activityId}")
+    public ResponseEntity<PostResponse> createPostFromActivity(
+            @PathVariable UUID activityId,
+            @Valid @RequestBody CreatePostFromActivityRequest request
+    ) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(postService.createPostFromActivity(activityId, request));
+    }
+
     @GetMapping("/posts/{id}")
     public PostResponse getPost(@PathVariable UUID id) {
         return postService.getPost(id);
@@ -55,6 +66,16 @@ public class PostController {
     public ResponseEntity<Void> deletePost(@PathVariable UUID id) {
         postService.deletePost(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/posts/{id}/training-session")
+    public TrainingSessionResponse getPostTrainingSession(@PathVariable UUID id) {
+        return postService.getPostTrainingSession(id);
+    }
+
+    @GetMapping("/posts/{id}/physical-activity")
+    public PhysicalActivityResponse getPostPhysicalActivity(@PathVariable UUID id) {
+        return postService.getPostPhysicalActivity(id);
     }
 
     @PostMapping("/posts/{id}/media/upload-url")

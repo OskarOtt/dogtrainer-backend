@@ -26,6 +26,12 @@ public class ApiMessageLocalizer {
             Map.entry("You do not have access to this comment", "Du har ikke tilgang til denne kommentaren"),
             Map.entry("Only an in-progress session can be completed", "Bare en pågående økt kan fullføres"),
             Map.entry("Only an in-progress session can be cancelled", "Bare en pågående økt kan avbrytes"),
+            Map.entry("Only an in-progress activity can be paused", "Bare en pågående aktivitet kan pauses"),
+            Map.entry("Only a paused activity can be resumed", "Bare en pauset aktivitet kan gjenopptas"),
+            Map.entry("Only an in-progress or paused activity can be completed", "Bare en pågående eller pauset aktivitet kan fullføres"),
+            Map.entry("Only an in-progress or paused activity can be cancelled", "Bare en pågående eller pauset aktivitet kan avbrytes"),
+            Map.entry("Only completed physical activities can be shared as a post", "Bare fullførte aktiviteter kan deles som innlegg"),
+            Map.entry("This physical activity has already been posted", "Denne aktiviteten er allerede publisert"),
             Map.entry("Exercises can only be modified while the session is in progress", "Øvelser kan bare endres mens økten pågår"),
             Map.entry("Successful repetitions cannot exceed total repetitions", "Antall vellykkede repetisjoner kan ikke overstige totalt antall repetisjoner"),
             Map.entry("One or more exercises referenced by this plan do not exist", "Én eller flere øvelser i denne planen finnes ikke"),
@@ -140,6 +146,7 @@ public class ApiMessageLocalizer {
             case "Exercise" -> "Øvelsen";
             case "TrainingSession" -> "Treningsøkten";
             case "SessionExercise" -> "Øktøvelsen";
+            case "PhysicalActivity" -> "Aktiviteten";
             case "TrainingPlan" -> "Treningsplanen";
             case "Dog" -> "Hunden";
             case "User" -> "Brukeren";

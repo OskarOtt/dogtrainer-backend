@@ -4,7 +4,9 @@ import com.oskott.dogtrainerbackend.dog.dto.DogMediaConfirmRequest;
 import com.oskott.dogtrainerbackend.dog.dto.DogReorderRequest;
 import com.oskott.dogtrainerbackend.dog.dto.DogRequest;
 import com.oskott.dogtrainerbackend.dog.dto.DogResponse;
+import com.oskott.dogtrainerbackend.dog.dto.PublicDogResponse;
 import com.oskott.dogtrainerbackend.dog.service.DogService;
+import com.oskott.dogtrainerbackend.dog.service.PublicDogProfileService;
 import com.oskott.dogtrainerbackend.storage.dto.UploadUrlRequest;
 import com.oskott.dogtrainerbackend.storage.dto.UploadUrlResponse;
 import jakarta.validation.Valid;
@@ -27,9 +29,11 @@ import java.util.UUID;
 public class DogController {
 
     private final DogService dogService;
+    private final PublicDogProfileService publicDogProfileService;
 
-    public DogController(DogService dogService) {
+    public DogController(DogService dogService, PublicDogProfileService publicDogProfileService) {
         this.dogService = dogService;
+        this.publicDogProfileService = publicDogProfileService;
     }
 
     @GetMapping
@@ -50,6 +54,12 @@ public class DogController {
     @PutMapping("/{id}")
     public DogResponse updateDog(@PathVariable UUID id, @Valid @RequestBody DogRequest request) {
         return dogService.updateDog(id, request);
+    }
+
+    /** Read-only profile for any dog, viewable by any signed-in user (subject to blocking). */
+    @GetMapping("/{id}/public")
+    public PublicDogResponse getPublicDog(@PathVariable UUID id) {
+        return publicDogProfileService.getPublicDog(id);
     }
 
     /**

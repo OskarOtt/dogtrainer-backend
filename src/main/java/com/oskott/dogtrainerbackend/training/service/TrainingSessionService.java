@@ -71,6 +71,19 @@ public class TrainingSessionService {
         return toResponse(getOwnedSession(sessionId));
     }
 
+    /**
+     * Plain, ownership-unchecked lookup for use by other features (e.g. {@code PostService}) that
+     * have already established the caller is allowed to see this specific session through some
+     * other relationship (such as a publicly readable post it was shared from). Callers must not
+     * expose this as a generic "fetch any session by id" path.
+     */
+    @Transactional(readOnly = true)
+    public TrainingSessionResponse getSessionById(UUID sessionId) {
+        TrainingSession session = trainingSessionRepository.findById(sessionId)
+                .orElseThrow(() -> ResourceNotFoundException.forEntity("TrainingSession", sessionId));
+        return toResponse(session);
+    }
+
     @Transactional
     public TrainingSessionResponse updateSession(UUID sessionId, UpdateTrainingSessionRequest request) {
         TrainingSession session = getOwnedSession(sessionId);

@@ -1,5 +1,7 @@
 package com.oskott.dogtrainerbackend.user.controller;
 
+import com.oskott.dogtrainerbackend.dog.dto.PublicDogSummaryResponse;
+import com.oskott.dogtrainerbackend.dog.service.PublicDogProfileService;
 import com.oskott.dogtrainerbackend.storage.dto.UploadUrlRequest;
 import com.oskott.dogtrainerbackend.storage.dto.UploadUrlResponse;
 import com.oskott.dogtrainerbackend.user.dto.AvatarConfirmRequest;
@@ -19,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -26,14 +29,22 @@ import java.util.UUID;
 public class UserController {
 
     private final UserService userService;
+    private final PublicDogProfileService publicDogProfileService;
 
-    public UserController(UserService userService) {
+    public UserController(UserService userService, PublicDogProfileService publicDogProfileService) {
         this.userService = userService;
+        this.publicDogProfileService = publicDogProfileService;
     }
 
     @GetMapping("/{id}")
     public PublicUserResponse getUser(@PathVariable UUID id) {
         return userService.getUser(id);
+    }
+
+    /** A user's dogs, for display on their public profile. */
+    @GetMapping("/{id}/dogs")
+    public List<PublicDogSummaryResponse> listDogs(@PathVariable UUID id) {
+        return publicDogProfileService.listPublicDogs(id);
     }
 
     @GetMapping(params = "email")

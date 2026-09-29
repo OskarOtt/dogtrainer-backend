@@ -30,5 +30,8 @@
     <include file="db/changelog/changes/023-reorder-obedience-trials-first.xml" relativeToChangelogFile="false"/>
     <include file="db/changelog/changes/024-add-catalog-translations.xml" relativeToChangelogFile="false"/>
     <include file="db/changelog/changes/025-remove-overall-impression-exercises.xml" relativeToChangelogFile="false"/>
+    <include file="db/changelog/changes/026-create-dog-titles.xml" relativeToChangelogFile="false"/>
+    <include file="db/changelog/changes/027-create-physical-activities.xml" relativeToChangelogFile="false"/>
+    <include file="db/changelog/changes/028-add-posts-physical-activity.xml" relativeToChangelogFile="false"/>
 
 </databaseChangeLog>
