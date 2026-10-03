@@ -7,6 +7,7 @@ import com.oskott.dogtrainerbackend.storage.dto.UploadUrlResponse;
 import com.oskott.dogtrainerbackend.user.dto.AvatarConfirmRequest;
 import com.oskott.dogtrainerbackend.user.dto.DeleteAccountRequest;
 import com.oskott.dogtrainerbackend.user.dto.PublicUserResponse;
+import com.oskott.dogtrainerbackend.user.dto.UpdateUsernameRequest;
 import com.oskott.dogtrainerbackend.user.dto.UserResponse;
 import com.oskott.dogtrainerbackend.user.service.UserService;
 import jakarta.validation.Valid;
@@ -60,6 +61,11 @@ public class UserController {
     @PutMapping("/me/avatar")
     public UserResponse confirmAvatar(@Valid @RequestBody AvatarConfirmRequest request) {
         return userService.confirmAvatar(request);
+    }
+
+    @PutMapping("/me/username")
+    public UserResponse updateUsername(@Valid @RequestBody UpdateUsernameRequest request) {
+        return userService.updateUsername(request);
     }
 
     @DeleteMapping("/me/avatar")

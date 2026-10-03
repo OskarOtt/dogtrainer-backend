@@ -59,9 +59,9 @@ public class LocalDevDataSeeder implements CommandLineRunner {
 
         User owner = new User(
                 UUID.randomUUID(),
-                "demo1@dogtrainer.local",
+                "demo1@dog.no",
                 "Demo One",
-                passwordEncoder.encode("password123"),
+                passwordEncoder.encode("pass1234"),
                 null,
                 now
         );
@@ -69,9 +69,9 @@ public class LocalDevDataSeeder implements CommandLineRunner {
 
         User other = new User(
                 UUID.randomUUID(),
-                "demo2@dogtrainer.local",
+                "demo2@dog.no",
                 "Demo Two",
-                passwordEncoder.encode("password123"),
+                passwordEncoder.encode("pass1234"),
                 null,
                 now
         );

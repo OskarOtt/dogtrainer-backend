@@ -74,7 +74,9 @@ public class ApiMessageLocalizer {
             Map.entry("must be a well-formed email address", "må være en gyldig e-postadresse"),
             Map.entry("must be greater than 0", "må være større enn 0"),
             Map.entry("must be a date in the past or in the present", "må være en dato i fortiden eller i dag"),
-            Map.entry("must be an absolute URL starting with http:// or https://", "må være en absolutt URL som starter med http:// eller https://")
+            Map.entry("must be an absolute URL starting with http:// or https://", "må være en absolutt URL som starter med http:// eller https://"),
+            Map.entry("must be at most 30 characters", "kan være maks 30 tegn"),
+            Map.entry("can only contain letters, numbers, spaces, and . , -", "kan bare inneholde bokstaver, tall, mellomrom og . , -")
     );
 
     public String localize(String message, HttpServletRequest request) {

@@ -1,6 +1,7 @@
 package com.oskott.dogtrainerbackend.training.controller;
 
 import com.oskott.dogtrainerbackend.training.dto.AddSessionExerciseRequest;
+import com.oskott.dogtrainerbackend.training.dto.CreateManualTrainingSessionRequest;
 import com.oskott.dogtrainerbackend.training.dto.CreateTrainingSessionRequest;
 import com.oskott.dogtrainerbackend.training.dto.TrainingSessionResponse;
 import com.oskott.dogtrainerbackend.training.dto.UpdateSessionExerciseRequest;
@@ -44,6 +45,14 @@ public class TrainingSessionController {
         return ResponseEntity.status(HttpStatus.CREATED).body(trainingSessionService.createSession(dogId, request));
     }
 
+    @PostMapping("/dogs/{dogId}/training-sessions/manual")
+    public ResponseEntity<TrainingSessionResponse> createManualSession(
+            @PathVariable UUID dogId,
+            @Valid @RequestBody CreateManualTrainingSessionRequest request
+    ) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(trainingSessionService.createManualSession(dogId, request));
+    }
+
     @GetMapping("/training-sessions/{id}")
     public TrainingSessionResponse getSession(@PathVariable UUID id) {
         return trainingSessionService.getSession(id);
@@ -62,6 +71,12 @@ public class TrainingSessionController {
     @PostMapping("/training-sessions/{id}/cancel")
     public TrainingSessionResponse cancelSession(@PathVariable UUID id) {
         return trainingSessionService.cancelSession(id);
+    }
+
+    @DeleteMapping("/training-sessions/{id}")
+    public ResponseEntity<Void> deleteSession(@PathVariable UUID id) {
+        trainingSessionService.deleteSession(id);
+        return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/training-sessions/{id}/exercises")

@@ -24,6 +24,7 @@ import com.oskott.dogtrainerbackend.storage.dto.UploadUrlResponse;
 import com.oskott.dogtrainerbackend.user.dto.AvatarConfirmRequest;
 import com.oskott.dogtrainerbackend.user.dto.DeleteAccountRequest;
 import com.oskott.dogtrainerbackend.user.dto.PublicUserResponse;
+import com.oskott.dogtrainerbackend.user.dto.UpdateUsernameRequest;
 import com.oskott.dogtrainerbackend.user.dto.UserResponse;
 import com.oskott.dogtrainerbackend.user.entity.User;
 import com.oskott.dogtrainerbackend.user.repository.UserRepository;
@@ -108,6 +109,13 @@ public class UserService {
         String resizedKey = storageService.resizeStoredImage(objectKey, ImageProcessingService.AVATAR_DOG_MAX_DIMENSION);
         storageService.deleteObjectIfPresent(storageService.extractObjectKey(user.getAvatarUrl()));
         user.setAvatarUrl(storageService.buildPublicUrl(resizedKey));
+        return UserResponse.from(user, externalIdentityRepository.findAllByUserId(user.getId()));
+    }
+
+    @Transactional
+    public UserResponse updateUsername(UpdateUsernameRequest request) {
+        User user = getCurrentUser();
+        user.setName(request.name().trim());
         return UserResponse.from(user, externalIdentityRepository.findAllByUserId(user.getId()));
     }
 

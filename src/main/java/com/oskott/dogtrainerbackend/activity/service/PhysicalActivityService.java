@@ -1,5 +1,6 @@
 package com.oskott.dogtrainerbackend.activity.service;
 
+import com.oskott.dogtrainerbackend.activity.dto.CreateManualPhysicalActivityRequest;
 import com.oskott.dogtrainerbackend.activity.dto.CreatePhysicalActivityRequest;
 import com.oskott.dogtrainerbackend.activity.dto.PhysicalActivityResponse;
 import com.oskott.dogtrainerbackend.activity.dto.UpdatePhysicalActivityRequest;
@@ -52,6 +53,35 @@ public class PhysicalActivityService {
                 Instant.now(),
                 ActivityStatus.IN_PROGRESS
         );
+        physicalActivityRepository.save(activity);
+        return PhysicalActivityResponse.from(activity);
+    }
+
+    /**
+     * Creates an activity that already happened (Train tab's "log a past entry" shortcut),
+     * going straight to COMPLETED instead of the normal start-now/finish-later flow.
+     */
+    @Transactional
+    public PhysicalActivityResponse createManualActivity(UUID dogId, CreateManualPhysicalActivityRequest request) {
+        dogService.getOwnedDog(dogId);
+        Instant completedAt = request.startedAt().plus(Duration.ofMinutes(request.durationMinutes()));
+        if (completedAt.isAfter(Instant.now())) {
+            throw new BusinessRuleException("A manually logged activity cannot end in the future");
+        }
+        String title = request.title() != null && !request.title().isBlank()
+                ? request.title()
+                : defaultTitle(request.activityType());
+        PhysicalActivity activity = new PhysicalActivity(
+                UUID.randomUUID(),
+                dogId,
+                request.activityType(),
+                title,
+                request.startedAt(),
+                ActivityStatus.COMPLETED
+        );
+        activity.setNotes(request.notes());
+        activity.setCompletedAt(completedAt);
+        activity.setDurationMinutes(request.durationMinutes());
         physicalActivityRepository.save(activity);
         return PhysicalActivityResponse.from(activity);
     }

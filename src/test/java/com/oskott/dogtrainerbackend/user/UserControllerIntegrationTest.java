@@ -164,6 +164,58 @@ class UserControllerIntegrationTest {
                 .andExpect(status().isNotFound());
     }
 
+    @Test
+    void updateUsernameTrimsAndPersistsValidName() throws Exception {
+        String accessToken = registerAndGetAccessToken("rename-valid-" + System.nanoTime() + "@example.com");
+
+        JsonNode updated = readBody(mockMvc.perform(put("/api/v1/users/me/username")
+                        .header("Authorization", "Bearer " + accessToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"name\":\"Anna Lee, Jr.\"}"))
+                .andExpect(status().isOk()));
+        assertThat(updated.get("name").asString()).isEqualTo("Anna Lee, Jr.");
+    }
+
+    @Test
+    void updateUsernameRejectsNameOver30Characters() throws Exception {
+        String accessToken = registerAndGetAccessToken("too-long-" + System.nanoTime() + "@example.com");
+        String tooLong = "A".repeat(31);
+
+        mockMvc.perform(put("/api/v1/users/me/username")
+                        .header("Authorization", "Bearer " + accessToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"name\":\"" + tooLong + "\"}"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void updateUsernameRejectsSpecialCharactersAndEmoji() throws Exception {
+        String accessToken = registerAndGetAccessToken("special-chars-" + System.nanoTime() + "@example.com");
+
+        mockMvc.perform(put("/api/v1/users/me/username")
+                        .header("Authorization", "Bearer " + accessToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"name\":\"Anna@Lee!\"}"))
+                .andExpect(status().isBadRequest());
+
+        mockMvc.perform(put("/api/v1/users/me/username")
+                        .header("Authorization", "Bearer " + accessToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"name\":\"Anna \uD83D\uDE00\"}"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void updateUsernameRejectsBlankName() throws Exception {
+        String accessToken = registerAndGetAccessToken("blank-name-" + System.nanoTime() + "@example.com");
+
+        mockMvc.perform(put("/api/v1/users/me/username")
+                        .header("Authorization", "Bearer " + accessToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"name\":\"   \"}"))
+                .andExpect(status().isBadRequest());
+    }
+
     /**
      * The access token's JWT "sub" claim is the user id (see JwtService). Decoding it locally
      * avoids needing a round trip just to find out who we just registered.

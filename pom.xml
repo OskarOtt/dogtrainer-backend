@@ -10,7 +10,7 @@
     </parent>
     <groupId>com.oskott</groupId>
     <artifactId>dogtrainer-backend</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>1.4.0</version>
     <name>dogtrainer-backend</name>
     <description>dogtrainer-backend</description>
     <url/>
