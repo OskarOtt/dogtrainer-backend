@@ -21,6 +21,9 @@ public class User {
     @Column(nullable = false)
     private String name;
 
+    @Column(nullable = false, unique = true, updatable = false)
+    private String username;
+
     @Column
     private String password;
 
@@ -37,10 +40,11 @@ public class User {
         // JPA
     }
 
-    public User(UUID id, String email, String name, String password, String avatarUrl, Instant createdAt) {
+    public User(UUID id, String email, String name, String username, String password, String avatarUrl, Instant createdAt) {
         this.id = id;
         this.email = email;
         this.name = name;
+        this.username = username;
         this.password = password;
         this.avatarUrl = avatarUrl;
         this.createdAt = createdAt;
@@ -64,6 +68,10 @@ public class User {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getUsername() {
+        return username;
     }
 
     public String getPassword() {

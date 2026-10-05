@@ -7,8 +7,9 @@ import com.oskott.dogtrainerbackend.storage.dto.UploadUrlResponse;
 import com.oskott.dogtrainerbackend.user.dto.AvatarConfirmRequest;
 import com.oskott.dogtrainerbackend.user.dto.DeleteAccountRequest;
 import com.oskott.dogtrainerbackend.user.dto.PublicUserResponse;
-import com.oskott.dogtrainerbackend.user.dto.UpdateUsernameRequest;
+import com.oskott.dogtrainerbackend.user.dto.UpdateDisplayNameRequest;
 import com.oskott.dogtrainerbackend.user.dto.UserResponse;
+import com.oskott.dogtrainerbackend.user.dto.UserSearchResult;
 import com.oskott.dogtrainerbackend.user.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -53,6 +54,14 @@ public class UserController {
         return userService.getUserByEmail(email);
     }
 
+    @GetMapping("/search")
+    public List<UserSearchResult> searchUsers(
+            @RequestParam String q,
+            @RequestParam(required = false) Integer limit
+    ) {
+        return userService.searchUsers(q, limit);
+    }
+
     @PostMapping("/me/avatar/upload-url")
     public UploadUrlResponse createAvatarUploadUrl(@Valid @RequestBody UploadUrlRequest request) {
         return userService.createAvatarUploadUrl(request);
@@ -64,8 +73,8 @@ public class UserController {
     }
 
     @PutMapping("/me/username")
-    public UserResponse updateUsername(@Valid @RequestBody UpdateUsernameRequest request) {
-        return userService.updateUsername(request);
+    public UserResponse updateDisplayName(@Valid @RequestBody UpdateDisplayNameRequest request) {
+        return userService.updateDisplayName(request);
     }
 
     @DeleteMapping("/me/avatar")

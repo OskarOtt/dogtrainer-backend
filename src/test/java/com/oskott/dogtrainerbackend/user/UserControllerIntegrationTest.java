@@ -165,7 +165,7 @@ class UserControllerIntegrationTest {
     }
 
     @Test
-    void updateUsernameTrimsAndPersistsValidName() throws Exception {
+    void updateDisplayNameTrimsAndPersistsValidName() throws Exception {
         String accessToken = registerAndGetAccessToken("rename-valid-" + System.nanoTime() + "@example.com");
 
         JsonNode updated = readBody(mockMvc.perform(put("/api/v1/users/me/username")
@@ -177,7 +177,7 @@ class UserControllerIntegrationTest {
     }
 
     @Test
-    void updateUsernameRejectsNameOver30Characters() throws Exception {
+    void updateDisplayNameRejectsNameOver30Characters() throws Exception {
         String accessToken = registerAndGetAccessToken("too-long-" + System.nanoTime() + "@example.com");
         String tooLong = "A".repeat(31);
 
@@ -189,7 +189,7 @@ class UserControllerIntegrationTest {
     }
 
     @Test
-    void updateUsernameRejectsSpecialCharactersAndEmoji() throws Exception {
+    void updateDisplayNameRejectsSpecialCharactersAndEmoji() throws Exception {
         String accessToken = registerAndGetAccessToken("special-chars-" + System.nanoTime() + "@example.com");
 
         mockMvc.perform(put("/api/v1/users/me/username")
@@ -206,7 +206,7 @@ class UserControllerIntegrationTest {
     }
 
     @Test
-    void updateUsernameRejectsBlankName() throws Exception {
+    void updateDisplayNameRejectsBlankName() throws Exception {
         String accessToken = registerAndGetAccessToken("blank-name-" + System.nanoTime() + "@example.com");
 
         mockMvc.perform(put("/api/v1/users/me/username")
@@ -216,7 +216,99 @@ class UserControllerIntegrationTest {
                 .andExpect(status().isBadRequest());
     }
 
+    @Test
+    void searchUsersMatchesByNameAndIsCaseInsensitive() throws Exception {
+        String uniqueSuffix = System.nanoTime() + "";
+        registerAndGetAccessToken("search-name-" + uniqueSuffix + "@example.com", "Zelda Trigram " + uniqueSuffix);
+        String searcherToken = registerAndGetAccessToken("search-name-searcher-" + uniqueSuffix + "@example.com");
+
+        JsonNode results = readBody(mockMvc.perform(get("/api/v1/users/search")
+                        .header("Authorization", "Bearer " + searcherToken)
+                        .param("q", "zelda trigram " + uniqueSuffix))
+                .andExpect(status().isOk()));
+        assertThat(results.isArray()).isTrue();
+        assertThat(results.size()).isEqualTo(1);
+        assertThat(results.get(0).get("name").asString()).isEqualTo("Zelda Trigram " + uniqueSuffix);
+        assertThat(results.get(0).has("username")).isTrue();
+        assertThat(results.get(0).has("email")).isFalse();
+    }
+
+    @Test
+    void searchUsersMatchesByGeneratedUsername() throws Exception {
+        // Keep this short: the username is truncated to 24 chars after slugifying, so a long
+        // suffix (e.g. a raw nanoTime value) would get cut off and no longer match the query.
+        String uniqueSuffix = Long.toString(System.nanoTime(), 36);
+        registerAndGetAccessToken("search-username-" + uniqueSuffix + "@example.com", "Wendy Handle " + uniqueSuffix);
+        String searcherToken = registerAndGetAccessToken("search-username-searcher-" + uniqueSuffix + "@example.com");
+
+        // The auto-derived username is a slug of the name, e.g. "wendy-handle-<suffix>".
+        JsonNode results = readBody(mockMvc.perform(get("/api/v1/users/search")
+                        .header("Authorization", "Bearer " + searcherToken)
+                        .param("q", "wendy-handle-" + uniqueSuffix))
+                .andExpect(status().isOk()));
+        assertThat(results.size()).isEqualTo(1);
+        assertThat(results.get(0).get("username").asString()).isEqualTo("wendy-handle-" + uniqueSuffix);
+    }
+
+    @Test
+    void searchUsersRejectsQueryShorterThanTwoCharacters() throws Exception {
+        String accessToken = registerAndGetAccessToken("search-short-query-" + System.nanoTime() + "@example.com");
+
+        mockMvc.perform(get("/api/v1/users/search")
+                        .header("Authorization", "Bearer " + accessToken)
+                        .param("q", "a"))
+                .andExpect(status().isConflict());
+    }
+
+    @Test
+    void searchUsersRespectsLimitParameter() throws Exception {
+        String uniqueSuffix = System.nanoTime() + "";
+        String searcherToken = registerAndGetAccessToken("search-limit-searcher-" + uniqueSuffix + "@example.com");
+        for (int i = 0; i < 3; i++) {
+            registerAndGetAccessToken("search-limit-" + i + "-" + uniqueSuffix + "@example.com", "LimitMatch " + uniqueSuffix + " " + i);
+        }
+
+        JsonNode results = readBody(mockMvc.perform(get("/api/v1/users/search")
+                        .header("Authorization", "Bearer " + searcherToken)
+                        .param("q", "limitmatch " + uniqueSuffix)
+                        .param("limit", "2"))
+                .andExpect(status().isOk()));
+        assertThat(results.size()).isEqualTo(2);
+    }
+
+    @Test
+    void searchUsersExcludesDeletedAccounts() throws Exception {
+        String uniqueSuffix = System.nanoTime() + "";
+        String deletedToken = registerAndGetAccessToken("search-deleted-" + uniqueSuffix + "@example.com", "Deleteme Soon " + uniqueSuffix);
+        String searcherToken = registerAndGetAccessToken("search-deleted-searcher-" + uniqueSuffix + "@example.com");
+
+        mockMvc.perform(delete("/api/v1/users/me")
+                        .header("Authorization", "Bearer " + deletedToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"method\":\"PASSWORD\",\"password\":\"SuperSecret123\"}"))
+                .andExpect(status().isNoContent());
+
+        JsonNode results = readBody(mockMvc.perform(get("/api/v1/users/search")
+                        .header("Authorization", "Bearer " + searcherToken)
+                        .param("q", "deleteme soon " + uniqueSuffix))
+                .andExpect(status().isOk()));
+        assertThat(results.size()).isEqualTo(0);
+    }
+
+    @Test
+    void searchUsersExcludesTheCurrentUser() throws Exception {
+        String uniqueSuffix = System.nanoTime() + "";
+        String selfToken = registerAndGetAccessToken("search-self-" + uniqueSuffix + "@example.com", "Selfie Searcher " + uniqueSuffix);
+
+        JsonNode results = readBody(mockMvc.perform(get("/api/v1/users/search")
+                        .header("Authorization", "Bearer " + selfToken)
+                        .param("q", "selfie searcher " + uniqueSuffix))
+                .andExpect(status().isOk()));
+        assertThat(results.size()).isEqualTo(0);
+    }
+
     /**
+
      * The access token's JWT "sub" claim is the user id (see JwtService). Decoding it locally
      * avoids needing a round trip just to find out who we just registered.
      */
@@ -248,7 +340,11 @@ class UserControllerIntegrationTest {
     }
 
     private String registerAndGetAccessToken(String email) throws Exception {
-        RegisterRequest registerRequest = new RegisterRequest(email, "Test User", "SuperSecret123");
+        return registerAndGetAccessToken(email, "Test User");
+    }
+
+    private String registerAndGetAccessToken(String email, String name) throws Exception {
+        RegisterRequest registerRequest = new RegisterRequest(email, name, "SuperSecret123");
         JsonNode body = readBody(mockMvc.perform(post("/api/v1/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(registerRequest)))

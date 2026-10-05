@@ -33,5 +33,7 @@
     <include file="db/changelog/changes/026-create-dog-titles.xml" relativeToChangelogFile="false"/>
     <include file="db/changelog/changes/027-create-physical-activities.xml" relativeToChangelogFile="false"/>
     <include file="db/changelog/changes/028-add-posts-physical-activity.xml" relativeToChangelogFile="false"/>
+    <include file="db/changelog/changes/029-add-users-username.xml" relativeToChangelogFile="false"/>
+    <include file="db/changelog/changes/030-add-users-trgm-search.xml" relativeToChangelogFile="false"/>
 
 </databaseChangeLog>

@@ -10,6 +10,7 @@ import com.oskott.dogtrainerbackend.training.entity.TrainingSession;
 import com.oskott.dogtrainerbackend.training.repository.TrainingSessionRepository;
 import com.oskott.dogtrainerbackend.user.entity.User;
 import com.oskott.dogtrainerbackend.user.repository.UserRepository;
+import com.oskott.dogtrainerbackend.user.service.UsernameGenerator;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Profile;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -34,19 +35,22 @@ public class LocalDevDataSeeder implements CommandLineRunner {
     private final TrainingSessionRepository trainingSessionRepository;
     private final PostRepository postRepository;
     private final PasswordEncoder passwordEncoder;
+    private final UsernameGenerator usernameGenerator;
 
     public LocalDevDataSeeder(
             UserRepository userRepository,
             DogRepository dogRepository,
             TrainingSessionRepository trainingSessionRepository,
             PostRepository postRepository,
-            PasswordEncoder passwordEncoder
+            PasswordEncoder passwordEncoder,
+            UsernameGenerator usernameGenerator
     ) {
         this.userRepository = userRepository;
         this.dogRepository = dogRepository;
         this.trainingSessionRepository = trainingSessionRepository;
         this.postRepository = postRepository;
         this.passwordEncoder = passwordEncoder;
+        this.usernameGenerator = usernameGenerator;
     }
 
     @Override
@@ -61,6 +65,7 @@ public class LocalDevDataSeeder implements CommandLineRunner {
                 UUID.randomUUID(),
                 "demo1@dog.no",
                 "Demo One",
+                usernameGenerator.generate("Demo One"),
                 passwordEncoder.encode("pass1234"),
                 null,
                 now
@@ -71,6 +76,7 @@ public class LocalDevDataSeeder implements CommandLineRunner {
                 UUID.randomUUID(),
                 "demo2@dog.no",
                 "Demo Two",
+                usernameGenerator.generate("Demo Two"),
                 passwordEncoder.encode("pass1234"),
                 null,
                 now

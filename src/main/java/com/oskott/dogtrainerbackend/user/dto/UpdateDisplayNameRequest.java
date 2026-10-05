@@ -4,7 +4,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
-public record UpdateUsernameRequest(
+public record UpdateDisplayNameRequest(
         @NotBlank
         @Size(max = 30, message = "must be at most 30 characters")
         @Pattern(
