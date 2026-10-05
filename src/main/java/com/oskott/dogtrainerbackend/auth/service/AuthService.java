@@ -14,6 +14,7 @@ import com.oskott.dogtrainerbackend.common.exception.BusinessRuleException;
 import com.oskott.dogtrainerbackend.common.security.JwtService;
 import com.oskott.dogtrainerbackend.user.entity.User;
 import com.oskott.dogtrainerbackend.user.repository.UserRepository;
+import com.oskott.dogtrainerbackend.user.service.UsernameGenerator;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -32,6 +33,7 @@ public class AuthService {
     private final RefreshTokenService refreshTokenService;
     private final ExternalIdentityRepository externalIdentityRepository;
     private final ExternalIdentityVerifier externalIdentityVerifier;
+    private final UsernameGenerator usernameGenerator;
 
     public AuthService(
             UserRepository userRepository,
@@ -39,7 +41,8 @@ public class AuthService {
             JwtService jwtService,
             RefreshTokenService refreshTokenService,
             ExternalIdentityRepository externalIdentityRepository,
-            ExternalIdentityVerifier externalIdentityVerifier
+            ExternalIdentityVerifier externalIdentityVerifier,
+            UsernameGenerator usernameGenerator
     ) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
@@ -47,6 +50,7 @@ public class AuthService {
         this.refreshTokenService = refreshTokenService;
         this.externalIdentityRepository = externalIdentityRepository;
         this.externalIdentityVerifier = externalIdentityVerifier;
+        this.usernameGenerator = usernameGenerator;
     }
 
     @Transactional
@@ -59,6 +63,7 @@ public class AuthService {
                 UUID.randomUUID(),
                 email,
                 request.name().trim(),
+                usernameGenerator.generate(request.name().trim()),
                 passwordEncoder.encode(request.password()),
                 null,
                 Instant.now()
@@ -181,7 +186,7 @@ public class AuthService {
         }
 
         Instant now = Instant.now();
-        User user = new User(UUID.randomUUID(), email, displayName, null, null, now);
+        User user = new User(UUID.randomUUID(), email, displayName, usernameGenerator.generate(displayName), null, null, now);
         userRepository.save(user);
         externalIdentityRepository.save(new ExternalIdentity(
                 UUID.randomUUID(),

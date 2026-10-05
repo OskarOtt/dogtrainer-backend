@@ -4,6 +4,7 @@ import com.oskott.dogtrainerbackend.common.exception.BusinessRuleException;
 import com.oskott.dogtrainerbackend.common.exception.ResourceNotFoundException;
 import com.oskott.dogtrainerbackend.dog.service.DogService;
 import com.oskott.dogtrainerbackend.training.dto.AddSessionExerciseRequest;
+import com.oskott.dogtrainerbackend.training.dto.CreateManualTrainingSessionRequest;
 import com.oskott.dogtrainerbackend.training.dto.CreateTrainingSessionRequest;
 import com.oskott.dogtrainerbackend.training.dto.SessionExerciseResponse;
 import com.oskott.dogtrainerbackend.training.dto.TrainingSessionResponse;
@@ -66,6 +67,31 @@ public class TrainingSessionService {
         return toResponse(session);
     }
 
+    /**
+     * Creates a session that already happened (Train tab's "log a past entry" shortcut),
+     * going straight to COMPLETED instead of the normal start-now/finish-later flow.
+     */
+    @Transactional
+    public TrainingSessionResponse createManualSession(UUID dogId, CreateManualTrainingSessionRequest request) {
+        dogService.getOwnedDog(dogId);
+        Instant completedAt = request.startedAt().plus(Duration.ofMinutes(request.durationMinutes()));
+        if (completedAt.isAfter(Instant.now())) {
+            throw new BusinessRuleException("A manually logged session cannot end in the future");
+        }
+        TrainingSession session = new TrainingSession(
+                UUID.randomUUID(),
+                dogId,
+                request.startedAt(),
+                request.location(),
+                request.notes(),
+                SessionStatus.COMPLETED
+        );
+        session.setCompletedAt(completedAt);
+        session.setDurationMinutes(request.durationMinutes());
+        trainingSessionRepository.save(session);
+        return toResponse(session);
+    }
+
     @Transactional(readOnly = true)
     public TrainingSessionResponse getSession(UUID sessionId) {
         return toResponse(getOwnedSession(sessionId));
@@ -114,6 +140,20 @@ public class TrainingSessionService {
         session.setStatus(SessionStatus.CANCELLED);
         session.setCompletedAt(Instant.now());
         return toResponse(session);
+    }
+
+    /**
+     * Deletes a completed session outright. {@code session_exercises} cascade-delete via their FK;
+     * if a post shares this session, its {@code training_session_id} is set to null by that FK
+     * (same behavior already used for dog/account deletion) rather than deleting the post.
+     */
+    @Transactional
+    public void deleteSession(UUID sessionId) {
+        TrainingSession session = getOwnedSession(sessionId);
+        if (session.getStatus() != SessionStatus.COMPLETED) {
+            throw new BusinessRuleException("Only a completed session can be deleted");
+        }
+        trainingSessionRepository.delete(session);
     }
 
     @Transactional

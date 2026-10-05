@@ -1,0 +1,72 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.29.xsd">
+
+    <!--
+        Adds a unique, immutable `username` handle distinct from the mutable `name` display
+        field. Existing rows are backfilled in two plain UPDATE passes (no CTEs/window
+        functions, since H2 doesn't allow a WITH-prefixed UPDATE): first slugify `name`
+        (lowercase, non [a-z0-9] -> '-', collapsed/trimmed, falling back to "user" when empty),
+        then de-duplicate collisions by appending -2, -3, ... ordered by `created_at`/`id` via a
+        self-referencing correlated subquery. Portable across Postgres (prod) and H2
+        (local/test), and mirrors UsernameGenerator's collision-suffixing used for new accounts.
+    -->
+    <changeSet id="029-add-users-username-column" author="oskott">
+        <addColumn tableName="users">
+            <column name="username" type="VARCHAR(30)"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="029-backfill-users-username-slug" author="oskott">
+        <sql>
+            UPDATE users
+            SET username = SUBSTRING(
+                CASE
+                    WHEN REGEXP_REPLACE(REGEXP_REPLACE(LOWER(name), '[^a-z0-9]+', '-'), '^-+|-+$', '') = ''
+                        THEN 'user'
+                    ELSE REGEXP_REPLACE(REGEXP_REPLACE(LOWER(name), '[^a-z0-9]+', '-'), '^-+|-+$', '')
+                END,
+                1, 24
+            )
+            WHERE username IS NULL;
+        </sql>
+        <rollback>
+            <sql>UPDATE users SET username = NULL;</sql>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="029-backfill-users-username-dedupe" author="oskott">
+        <sql>
+            UPDATE users u
+            SET username = username || '-' || (
+                SELECT COUNT(*) + 1
+                FROM users u2
+                WHERE u2.username = u.username
+                  AND (u2.created_at &lt; u.created_at
+                       OR (u2.created_at = u.created_at AND u2.id &lt; u.id))
+            )
+            WHERE EXISTS (
+                SELECT 1
+                FROM users u2
+                WHERE u2.username = u.username
+                  AND (u2.created_at &lt; u.created_at
+                       OR (u2.created_at = u.created_at AND u2.id &lt; u.id))
+            );
+        </sql>
+        <rollback>
+            <!-- No-op: the slug pass's rollback already clears username entirely. -->
+        </rollback>
+    </changeSet>
+
+    <changeSet id="029-add-users-username-constraints" author="oskott">
+        <addNotNullConstraint tableName="users" columnName="username" columnDataType="VARCHAR(30)"/>
+        <addUniqueConstraint tableName="users" columnNames="username" constraintName="uc_users_username"/>
+        <createIndex indexName="idx_users_username" tableName="users">
+            <column name="username"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

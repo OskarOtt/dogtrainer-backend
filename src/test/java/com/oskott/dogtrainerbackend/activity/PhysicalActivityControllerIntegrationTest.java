@@ -120,6 +120,41 @@ class PhysicalActivityControllerIntegrationTest {
         assertThat(allActivities).hasSize(2);
     }
 
+    @Test
+    void manualActivityCreationGoesStraightToCompletedAndRejectsFutureOrOtherUsersDog() throws Exception {
+        String ownerToken = registerAndGetAccessToken("manual-activity-owner-" + System.nanoTime() + "@example.com");
+        String otherToken = registerAndGetAccessToken("manual-activity-other-" + System.nanoTime() + "@example.com");
+        String dogId = createDog(ownerToken, "Rex");
+
+        String startedAt = java.time.Instant.now().minus(java.time.Duration.ofHours(1)).toString();
+        JsonNode activity = readBody(mockMvc.perform(post("/api/v1/dogs/" + dogId + "/physical-activities/manual")
+                        .header("Authorization", "Bearer " + ownerToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"activityType\":\"RUN\",\"startedAt\":\"" + startedAt + "\",\"durationMinutes\":40,"
+                                + "\"notes\":\"Forgot to track this one\"}"))
+                .andExpect(status().isCreated()));
+        assertThat(activity.get("status").asString()).isEqualTo("COMPLETED");
+        assertThat(activity.get("durationMinutes").asInt()).isEqualTo(40);
+        assertThat(activity.get("title").asString()).isEqualTo("Run");
+        assertThat(activity.get("completedAt").isNull()).isFalse();
+
+        // an activity whose startedAt is valid (past) but whose computed completedAt (startedAt +
+        // duration) would land in the future is rejected
+        String almostNow = java.time.Instant.now().minus(java.time.Duration.ofMinutes(10)).toString();
+        mockMvc.perform(post("/api/v1/dogs/" + dogId + "/physical-activities/manual")
+                        .header("Authorization", "Bearer " + ownerToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"activityType\":\"WALK\",\"startedAt\":\"" + almostNow + "\",\"durationMinutes\":60}"))
+                .andExpect(status().isConflict());
+
+        // another user cannot log a manual activity against someone else's dog
+        mockMvc.perform(post("/api/v1/dogs/" + dogId + "/physical-activities/manual")
+                        .header("Authorization", "Bearer " + otherToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"activityType\":\"WALK\",\"startedAt\":\"" + startedAt + "\",\"durationMinutes\":30}"))
+                .andExpect(status().isForbidden());
+    }
+
     private String createDog(String accessToken, String name) throws Exception {
         JsonNode dog = readBody(mockMvc.perform(post("/api/v1/dogs")
                         .header("Authorization", "Bearer " + accessToken)

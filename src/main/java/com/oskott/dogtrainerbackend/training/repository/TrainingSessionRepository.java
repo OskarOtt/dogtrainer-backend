@@ -11,8 +11,11 @@ public interface TrainingSessionRepository extends JpaRepository<TrainingSession
 
     List<TrainingSession> findAllByDogIdOrderByStartedAtDesc(UUID dogId);
 
-    /** Most recent sessions for a dog's public profile - capped since it's summary-only. */
-    List<TrainingSession> findTop10ByDogIdOrderByStartedAtDesc(UUID dogId);
+    /**
+     * Most recent sessions for a dog's public profile - capped since it's summary-only, and
+     * scoped to a status (e.g. completed-only, hiding cancelled sessions).
+     */
+    List<TrainingSession> findTop10ByDogIdAndStatusOrderByStartedAtDesc(UUID dogId, SessionStatus status);
 
     long countByDogIdAndStatus(UUID dogId, SessionStatus status);
 }

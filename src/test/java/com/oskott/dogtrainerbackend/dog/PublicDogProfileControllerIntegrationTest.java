@@ -110,6 +110,47 @@ class PublicDogProfileControllerIntegrationTest {
         assertThat(ids).containsExactly(rexId, fidoId);
     }
 
+    @Test
+    void publicDogProfileRecentSessionsExcludeCancelledSessions() throws Exception {
+        String ownerAccessToken = registerAndGetAccessToken("public-sessions-owner-" + System.nanoTime() + "@example.com");
+        String viewerAccessToken = registerAndGetAccessToken("public-sessions-viewer-" + System.nanoTime() + "@example.com");
+        String dogId = createDog(ownerAccessToken, "Rex").get("id").asString();
+
+        String completedSessionId = createSession(ownerAccessToken, dogId).get("id").asString();
+        completeSession(ownerAccessToken, completedSessionId);
+        String cancelledSessionId = createSession(ownerAccessToken, dogId).get("id").asString();
+        cancelSession(ownerAccessToken, cancelledSessionId);
+
+        JsonNode profile = readBody(mockMvc.perform(get("/api/v1/dogs/" + dogId + "/public")
+                        .header("Authorization", "Bearer " + viewerAccessToken))
+                .andExpect(status().isOk()));
+
+        assertThat(profile.get("completedSessionCount").asLong()).isEqualTo(1);
+        java.util.List<String> recentSessionIds = new java.util.ArrayList<>();
+        profile.get("recentSessions").forEach(node -> recentSessionIds.add(node.get("id").asString()));
+        assertThat(recentSessionIds).containsExactly(completedSessionId);
+    }
+
+    private JsonNode createSession(String accessToken, String dogId) throws Exception {
+        return readBody(mockMvc.perform(post("/api/v1/dogs/" + dogId + "/training-sessions")
+                        .header("Authorization", "Bearer " + accessToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}"))
+                .andExpect(status().isCreated()));
+    }
+
+    private void completeSession(String accessToken, String sessionId) throws Exception {
+        mockMvc.perform(post("/api/v1/training-sessions/" + sessionId + "/complete")
+                        .header("Authorization", "Bearer " + accessToken))
+                .andExpect(status().isOk());
+    }
+
+    private void cancelSession(String accessToken, String sessionId) throws Exception {
+        mockMvc.perform(post("/api/v1/training-sessions/" + sessionId + "/cancel")
+                        .header("Authorization", "Bearer " + accessToken))
+                .andExpect(status().isOk());
+    }
+
     private JsonNode createDog(String accessToken, String name) throws Exception {
         String payload = "{\"name\":\"" + name + "\"}";
         return readBody(mockMvc.perform(post("/api/v1/dogs")

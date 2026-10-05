@@ -72,7 +72,7 @@ public class PublicDogProfileService {
                 .map(DogTitleResponse::from)
                 .toList();
         List<PublicSessionSummaryResponse> recentSessions = trainingSessionRepository
-                .findTop10ByDogIdOrderByStartedAtDesc(dogId).stream()
+                .findTop10ByDogIdAndStatusOrderByStartedAtDesc(dogId, SessionStatus.COMPLETED).stream()
                 .limit(RECENT_SESSIONS_LIMIT)
                 .map(PublicSessionSummaryResponse::from)
                 .toList();

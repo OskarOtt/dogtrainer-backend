@@ -1,5 +1,6 @@
 package com.oskott.dogtrainerbackend.activity.controller;
 
+import com.oskott.dogtrainerbackend.activity.dto.CreateManualPhysicalActivityRequest;
 import com.oskott.dogtrainerbackend.activity.dto.CreatePhysicalActivityRequest;
 import com.oskott.dogtrainerbackend.activity.dto.PhysicalActivityResponse;
 import com.oskott.dogtrainerbackend.activity.dto.UpdatePhysicalActivityRequest;
@@ -39,6 +40,14 @@ public class PhysicalActivityController {
             @Valid @RequestBody CreatePhysicalActivityRequest request
     ) {
         return ResponseEntity.status(HttpStatus.CREATED).body(physicalActivityService.createActivity(dogId, request));
+    }
+
+    @PostMapping("/dogs/{dogId}/physical-activities/manual")
+    public ResponseEntity<PhysicalActivityResponse> createManualActivity(
+            @PathVariable UUID dogId,
+            @Valid @RequestBody CreateManualPhysicalActivityRequest request
+    ) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(physicalActivityService.createManualActivity(dogId, request));
     }
 
     @GetMapping("/physical-activities/{id}")

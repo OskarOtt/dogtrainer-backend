@@ -137,6 +137,108 @@ class TrainingSessionControllerIntegrationTest {
         assertThat(allSessions).hasSize(2);
     }
 
+    @Test
+    void manualSessionCreationGoesStraightToCompletedAndRejectsFutureOrOtherUsersDog() throws Exception {
+        String ownerToken = registerAndGetAccessToken("manual-owner-" + System.nanoTime() + "@example.com");
+        String otherToken = registerAndGetAccessToken("manual-other-" + System.nanoTime() + "@example.com");
+        String dogId = createDog(ownerToken, "Rex");
+
+        String startedAt = java.time.Instant.now().minus(java.time.Duration.ofHours(2)).toString();
+        JsonNode session = readBody(mockMvc.perform(post("/api/v1/dogs/" + dogId + "/training-sessions/manual")
+                        .header("Authorization", "Bearer " + ownerToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"startedAt\":\"" + startedAt + "\",\"durationMinutes\":45,"
+                                + "\"location\":\"Park\",\"notes\":\"Forgot to track this one\"}"))
+                .andExpect(status().isCreated()));
+        assertThat(session.get("status").asString()).isEqualTo("COMPLETED");
+        assertThat(session.get("durationMinutes").asInt()).isEqualTo(45);
+        assertThat(session.get("completedAt").isNull()).isFalse();
+        assertThat(session.get("location").asString()).isEqualTo("Park");
+
+        // a session whose startedAt is valid (past) but whose computed completedAt (startedAt +
+        // duration) would land in the future is rejected
+        String almostNow = java.time.Instant.now().minus(java.time.Duration.ofMinutes(10)).toString();
+        mockMvc.perform(post("/api/v1/dogs/" + dogId + "/training-sessions/manual")
+                        .header("Authorization", "Bearer " + ownerToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"startedAt\":\"" + almostNow + "\",\"durationMinutes\":60}"))
+                .andExpect(status().isConflict());
+
+        // another user cannot log a manual session against someone else's dog
+        mockMvc.perform(post("/api/v1/dogs/" + dogId + "/training-sessions/manual")
+                        .header("Authorization", "Bearer " + otherToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"startedAt\":\"" + startedAt + "\",\"durationMinutes\":30}"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void deleteSessionRequiresCompletedStatusAndIsOwnershipScoped() throws Exception {
+        String ownerToken = registerAndGetAccessToken("delete-owner-" + System.nanoTime() + "@example.com");
+        String otherToken = registerAndGetAccessToken("delete-other-" + System.nanoTime() + "@example.com");
+        String dogId = createDog(ownerToken, "Fido");
+
+        // IN_PROGRESS session cannot be deleted
+        JsonNode inProgress = readBody(mockMvc.perform(post("/api/v1/dogs/" + dogId + "/training-sessions")
+                        .header("Authorization", "Bearer " + ownerToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}"))
+                .andExpect(status().isCreated()));
+        String inProgressId = inProgress.get("id").asString();
+        mockMvc.perform(delete("/api/v1/training-sessions/" + inProgressId)
+                        .header("Authorization", "Bearer " + ownerToken))
+                .andExpect(status().isConflict());
+
+        // CANCELLED session cannot be deleted either
+        mockMvc.perform(post("/api/v1/training-sessions/" + inProgressId + "/cancel")
+                        .header("Authorization", "Bearer " + ownerToken))
+                .andExpect(status().isOk());
+        mockMvc.perform(delete("/api/v1/training-sessions/" + inProgressId)
+                        .header("Authorization", "Bearer " + ownerToken))
+                .andExpect(status().isConflict());
+
+        // a completed session, shared as a post, can be deleted - the post survives, unlinked
+        JsonNode completedSession = readBody(mockMvc.perform(post("/api/v1/dogs/" + dogId + "/training-sessions/manual")
+                        .header("Authorization", "Bearer " + ownerToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"startedAt\":\"" + java.time.Instant.now().minus(java.time.Duration.ofHours(1)) + "\","
+                                + "\"durationMinutes\":30}"))
+                .andExpect(status().isCreated()));
+        String completedSessionId = completedSession.get("id").asString();
+
+        JsonNode post = readBody(mockMvc.perform(post("/api/v1/posts/from-session/" + completedSessionId)
+                        .header("Authorization", "Bearer " + ownerToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}"))
+                .andExpect(status().isCreated()));
+        String postId = post.get("id").asString();
+        assertThat(post.get("trainingSessionId").asString()).isEqualTo(completedSessionId);
+
+        // another user cannot delete it
+        mockMvc.perform(delete("/api/v1/training-sessions/" + completedSessionId)
+                        .header("Authorization", "Bearer " + otherToken))
+                .andExpect(status().isForbidden());
+
+        mockMvc.perform(delete("/api/v1/training-sessions/" + completedSessionId)
+                        .header("Authorization", "Bearer " + ownerToken))
+                .andExpect(status().isNoContent());
+
+        mockMvc.perform(get("/api/v1/training-sessions/" + completedSessionId)
+                        .header("Authorization", "Bearer " + ownerToken))
+                .andExpect(status().isNotFound());
+
+        // the post is still there, just unlinked from the now-deleted session
+        JsonNode survivingPost = readBody(mockMvc.perform(get("/api/v1/posts/" + postId)
+                        .header("Authorization", "Bearer " + ownerToken))
+                .andExpect(status().isOk()));
+        assertThat(survivingPost.get("trainingSessionId").isNull()).isTrue();
+
+        // deleting an already-deleted session is a 404, not another conflict
+        mockMvc.perform(delete("/api/v1/training-sessions/" + completedSessionId)
+                        .header("Authorization", "Bearer " + ownerToken))
+                .andExpect(status().isNotFound());
+    }
+
     private String createDog(String accessToken, String name) throws Exception {
         JsonNode dog = readBody(mockMvc.perform(post("/api/v1/dogs")
                         .header("Authorization", "Bearer " + accessToken)

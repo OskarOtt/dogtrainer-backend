@@ -11,6 +11,7 @@ import com.oskott.dogtrainerbackend.auth.service.VerifiedExternalIdentity;
 import com.oskott.dogtrainerbackend.common.exception.AuthFlowException;
 import com.oskott.dogtrainerbackend.common.exception.AccessDeniedForResourceException;
 import com.oskott.dogtrainerbackend.common.exception.AuthenticationFailedException;
+import com.oskott.dogtrainerbackend.common.exception.BusinessRuleException;
 import com.oskott.dogtrainerbackend.common.exception.ResourceNotFoundException;
 import com.oskott.dogtrainerbackend.common.security.CurrentUserProvider;
 import com.oskott.dogtrainerbackend.dog.entity.Dog;
@@ -24,9 +25,12 @@ import com.oskott.dogtrainerbackend.storage.dto.UploadUrlResponse;
 import com.oskott.dogtrainerbackend.user.dto.AvatarConfirmRequest;
 import com.oskott.dogtrainerbackend.user.dto.DeleteAccountRequest;
 import com.oskott.dogtrainerbackend.user.dto.PublicUserResponse;
+import com.oskott.dogtrainerbackend.user.dto.UpdateDisplayNameRequest;
 import com.oskott.dogtrainerbackend.user.dto.UserResponse;
+import com.oskott.dogtrainerbackend.user.dto.UserSearchResult;
 import com.oskott.dogtrainerbackend.user.entity.User;
 import com.oskott.dogtrainerbackend.user.repository.UserRepository;
+import com.oskott.dogtrainerbackend.user.repository.UserSearchRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -40,7 +44,12 @@ import java.util.UUID;
 @Service
 public class UserService {
 
+    private static final int MIN_SEARCH_QUERY_LENGTH = 2;
+    private static final int DEFAULT_SEARCH_LIMIT = 20;
+    private static final int MAX_SEARCH_LIMIT = 50;
+
     private final UserRepository userRepository;
+    private final UserSearchRepository userSearchRepository;
     private final CurrentUserProvider currentUserProvider;
     private final StorageService storageService;
     private final DogRepository dogRepository;
@@ -54,6 +63,7 @@ public class UserService {
 
     public UserService(
             UserRepository userRepository,
+            UserSearchRepository userSearchRepository,
             CurrentUserProvider currentUserProvider,
             StorageService storageService,
             DogRepository dogRepository,
@@ -66,6 +76,7 @@ public class UserService {
             @Value("${app.auth.reauthentication-max-age-seconds:300}") long reauthenticationMaxAgeSeconds
     ) {
         this.userRepository = userRepository;
+        this.userSearchRepository = userSearchRepository;
         this.currentUserProvider = currentUserProvider;
         this.storageService = storageService;
         this.dogRepository = dogRepository;
@@ -92,6 +103,24 @@ public class UserService {
                 .orElseThrow(() -> ResourceNotFoundException.forEntity("User", email));
     }
 
+    @Transactional(readOnly = true)
+    public List<UserSearchResult> searchUsers(String query, Integer limit) {
+        String trimmedQuery = query == null ? "" : query.trim();
+        if (trimmedQuery.length() < MIN_SEARCH_QUERY_LENGTH) {
+            throw new BusinessRuleException(
+                    "Search query must be at least " + MIN_SEARCH_QUERY_LENGTH + " characters"
+            );
+        }
+        int effectiveLimit = limit == null
+                ? DEFAULT_SEARCH_LIMIT
+                : Math.min(Math.max(limit, 1), MAX_SEARCH_LIMIT);
+        // Exclude the current user so they can't find/follow themselves from search results.
+        UUID currentUserId = currentUserProvider.getCurrentUserId();
+        return userSearchRepository.search(trimmedQuery, effectiveLimit, currentUserId).stream()
+                .map(UserSearchResult::from)
+                .toList();
+    }
+
     public UploadUrlResponse createAvatarUploadUrl(UploadUrlRequest request) {
         UUID userId = currentUserProvider.getCurrentUserId();
         return storageService.createUploadUrl(avatarKeyPrefix(userId), MediaCategory.IMAGE, request);
@@ -108,6 +137,13 @@ public class UserService {
         String resizedKey = storageService.resizeStoredImage(objectKey, ImageProcessingService.AVATAR_DOG_MAX_DIMENSION);
         storageService.deleteObjectIfPresent(storageService.extractObjectKey(user.getAvatarUrl()));
         user.setAvatarUrl(storageService.buildPublicUrl(resizedKey));
+        return UserResponse.from(user, externalIdentityRepository.findAllByUserId(user.getId()));
+    }
+
+    @Transactional
+    public UserResponse updateDisplayName(UpdateDisplayNameRequest request) {
+        User user = getCurrentUser();
+        user.setName(request.name().trim());
         return UserResponse.from(user, externalIdentityRepository.findAllByUserId(user.getId()));
     }
 
