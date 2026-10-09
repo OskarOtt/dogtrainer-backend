@@ -40,14 +40,14 @@ public class PhysicalActivityService {
     }
 
     @Transactional
-    public PhysicalActivityResponse createActivity(UUID dogId, CreatePhysicalActivityRequest request) {
-        dogService.getOwnedDog(dogId);
+    public PhysicalActivityResponse createActivity(CreatePhysicalActivityRequest request) {
+        List<UUID> dogIds = distinctOwnedDogIds(request.dogIds());
         String title = request.title() != null && !request.title().isBlank()
                 ? request.title()
                 : defaultTitle(request.activityType());
         PhysicalActivity activity = new PhysicalActivity(
                 UUID.randomUUID(),
-                dogId,
+                dogIds,
                 request.activityType(),
                 title,
                 Instant.now(),
@@ -62,8 +62,8 @@ public class PhysicalActivityService {
      * going straight to COMPLETED instead of the normal start-now/finish-later flow.
      */
     @Transactional
-    public PhysicalActivityResponse createManualActivity(UUID dogId, CreateManualPhysicalActivityRequest request) {
-        dogService.getOwnedDog(dogId);
+    public PhysicalActivityResponse createManualActivity(CreateManualPhysicalActivityRequest request) {
+        List<UUID> dogIds = distinctOwnedDogIds(request.dogIds());
         Instant completedAt = request.startedAt().plus(Duration.ofMinutes(request.durationMinutes()));
         if (completedAt.isAfter(Instant.now())) {
             throw new BusinessRuleException("A manually logged activity cannot end in the future");
@@ -73,7 +73,7 @@ public class PhysicalActivityService {
                 : defaultTitle(request.activityType());
         PhysicalActivity activity = new PhysicalActivity(
                 UUID.randomUUID(),
-                dogId,
+                dogIds,
                 request.activityType(),
                 title,
                 request.startedAt(),
@@ -84,6 +84,17 @@ public class PhysicalActivityService {
         activity.setDurationMinutes(request.durationMinutes());
         physicalActivityRepository.save(activity);
         return PhysicalActivityResponse.from(activity);
+    }
+
+    /**
+     * Validates that every requested dog id is owned by the current user, de-duplicating while
+     * preserving the caller's ordering (the first dog is treated as "primary" wherever a single
+     * dog is needed downstream, e.g. sharing a multi-dog activity as a post).
+     */
+    private List<UUID> distinctOwnedDogIds(List<UUID> dogIds) {
+        List<UUID> distinct = dogIds.stream().distinct().toList();
+        distinct.forEach(dogService::getOwnedDog);
+        return distinct;
     }
 
     @Transactional(readOnly = true)
@@ -182,13 +193,13 @@ public class PhysicalActivityService {
     }
 
     /**
-     * Fetches a physical activity and enforces that its dog belongs to the currently
-     * authenticated user, so no user can ever read or modify another user's activities.
+     * Fetches a physical activity and enforces that every one of its dogs belongs to the
+     * currently authenticated user, so no user can ever read or modify another user's activities.
      */
     private PhysicalActivity getOwnedActivity(UUID activityId) {
         PhysicalActivity activity = getActivityOrThrow(activityId);
-        // Throws AccessDeniedForResourceException if the dog isn't owned by the current user.
-        dogService.getOwnedDog(activity.getDogId());
+        // Throws AccessDeniedForResourceException if any dog isn't owned by the current user.
+        activity.getDogIds().forEach(dogService::getOwnedDog);
         return activity;
     }
 

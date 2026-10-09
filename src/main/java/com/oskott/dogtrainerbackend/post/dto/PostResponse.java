@@ -1,6 +1,7 @@
 package com.oskott.dogtrainerbackend.post.dto;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 public record PostResponse(
@@ -8,8 +9,8 @@ public record PostResponse(
         UUID authorId,
         String authorName,
         String authorAvatarUrl,
-        UUID dogId,
-        String dogName,
+        List<UUID> dogIds,
+        List<String> dogNames,
         UUID trainingSessionId,
         UUID physicalActivityId,
         String content,

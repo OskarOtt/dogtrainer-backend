@@ -5,11 +5,12 @@ import com.oskott.dogtrainerbackend.activity.entity.ActivityType;
 import com.oskott.dogtrainerbackend.activity.entity.PhysicalActivity;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 public record PhysicalActivityResponse(
         UUID id,
-        UUID dogId,
+        List<UUID> dogIds,
         ActivityType activityType,
         String title,
         String notes,
@@ -24,7 +25,7 @@ public record PhysicalActivityResponse(
     public static PhysicalActivityResponse from(PhysicalActivity activity) {
         return new PhysicalActivityResponse(
                 activity.getId(),
-                activity.getDogId(),
+                activity.getDogIds(),
                 activity.getActivityType(),
                 activity.getTitle(),
                 activity.getNotes(),

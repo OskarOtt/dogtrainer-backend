@@ -19,6 +19,7 @@ import org.springframework.stereotype.Component;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -113,7 +114,7 @@ public class LocalDevDataSeeder implements CommandLineRunner {
         Post post = new Post(
                 UUID.randomUUID(),
                 owner.getId(),
-                dog.getId(),
+                List.of(dog.getId()),
                 session.getId(),
                 "Great training session with Buddy today - sit, stay and recall are looking solid!",
                 null,

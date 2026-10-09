@@ -34,20 +34,14 @@ public class PhysicalActivityController {
         return physicalActivityService.listActivitiesForDog(dogId);
     }
 
-    @PostMapping("/dogs/{dogId}/physical-activities")
-    public ResponseEntity<PhysicalActivityResponse> createActivity(
-            @PathVariable UUID dogId,
-            @Valid @RequestBody CreatePhysicalActivityRequest request
-    ) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(physicalActivityService.createActivity(dogId, request));
+    @PostMapping("/physical-activities")
+    public ResponseEntity<PhysicalActivityResponse> createActivity(@Valid @RequestBody CreatePhysicalActivityRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(physicalActivityService.createActivity(request));
     }
 
-    @PostMapping("/dogs/{dogId}/physical-activities/manual")
-    public ResponseEntity<PhysicalActivityResponse> createManualActivity(
-            @PathVariable UUID dogId,
-            @Valid @RequestBody CreateManualPhysicalActivityRequest request
-    ) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(physicalActivityService.createManualActivity(dogId, request));
+    @PostMapping("/physical-activities/manual")
+    public ResponseEntity<PhysicalActivityResponse> createManualActivity(@Valid @RequestBody CreateManualPhysicalActivityRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(physicalActivityService.createManualActivity(request));
     }
 
     @GetMapping("/physical-activities/{id}")

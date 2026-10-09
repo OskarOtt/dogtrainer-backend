@@ -3,11 +3,14 @@ package com.oskott.dogtrainerbackend.activity.dto;
 import com.oskott.dogtrainerbackend.activity.entity.ActivityType;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PastOrPresent;
 import jakarta.validation.constraints.Size;
 
 import java.time.Instant;
+import java.util.List;
+import java.util.UUID;
 
 /**
  * Creates a physical activity that already happened, bypassing the normal "start now, finish
@@ -15,6 +18,7 @@ import java.time.Instant;
  * forgot to track an activity as it happened. The activity is created directly as COMPLETED.
  */
 public record CreateManualPhysicalActivityRequest(
+        @NotEmpty List<UUID> dogIds,
         @NotNull ActivityType activityType,
         @Size(max = 255) String title,
         @Size(max = 2048) String notes,

@@ -63,12 +63,12 @@ class PostControllerIntegrationTest {
         JsonNode created = readBody(mockMvc.perform(post("/api/v1/posts")
                         .header("Authorization", "Bearer " + ownerToken)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"content\":\"Great walk today!\",\"dogId\":\"" + dogId + "\"}"))
+                        .content("{\"content\":\"Great walk today!\",\"dogIds\":[\"" + dogId + "\"]}"))
                 .andExpect(status().isCreated()));
         String postId = created.get("id").asString();
         assertThat(created.get("content").asString()).isEqualTo("Great walk today!");
-        assertThat(created.get("dogId").asString()).isEqualTo(dogId);
-        assertThat(created.get("dogName").asString()).isEqualTo("Rex");
+        assertThat(created.get("dogIds").get(0).asString()).isEqualTo(dogId);
+        assertThat(created.get("dogNames").get(0).asString()).isEqualTo("Rex");
         assertThat(created.get("trainingSessionId").isNull()).isTrue();
 
         // any authenticated user can read the post - a feed is public within the app
@@ -100,7 +100,7 @@ class PostControllerIntegrationTest {
         mockMvc.perform(post("/api/v1/posts")
                         .header("Authorization", "Bearer " + otherToken)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"content\":\"Not my dog\",\"dogId\":\"" + dogId + "\"}"))
+                        .content("{\"content\":\"Not my dog\",\"dogIds\":[\"" + dogId + "\"]}"))
                 .andExpect(status().isForbidden());
     }
 
@@ -138,7 +138,7 @@ class PostControllerIntegrationTest {
                         .content("{}"))
                 .andExpect(status().isCreated()));
         assertThat(postFromSession.get("trainingSessionId").asString()).isEqualTo(sessionId);
-        assertThat(postFromSession.get("dogId").asString()).isEqualTo(dogId);
+        assertThat(postFromSession.get("dogIds").get(0).asString()).isEqualTo(dogId);
         assertThat(postFromSession.get("content").asString()).contains("Buddy").contains("training session");
 
         // a session can only ever be posted once
@@ -249,7 +249,7 @@ class PostControllerIntegrationTest {
                 .andExpect(status().isCreated()));
         assertThat(postFromActivity.get("physicalActivityId").asString()).isEqualTo(activityId);
         assertThat(postFromActivity.get("trainingSessionId").isNull()).isTrue();
-        assertThat(postFromActivity.get("dogId").asString()).isEqualTo(dogId);
+        assertThat(postFromActivity.get("dogIds").get(0).asString()).isEqualTo(dogId);
         assertThat(postFromActivity.get("content").asString()).contains("Buddy");
         String postId = postFromActivity.get("id").asString();
 
@@ -270,7 +270,7 @@ class PostControllerIntegrationTest {
                         .header("Authorization", "Bearer " + otherToken))
                 .andExpect(status().isOk()));
         assertThat(preview.get("id").asString()).isEqualTo(activityId);
-        assertThat(preview.get("dogId").asString()).isEqualTo(dogId);
+        assertThat(preview.get("dogIds").get(0).asString()).isEqualTo(dogId);
 
         // a post with no linked activity has no preview
         String standalonePostId = createStandalonePost(ownerToken, "No activity here");
@@ -445,10 +445,10 @@ class PostControllerIntegrationTest {
     }
 
     private String createActivity(String accessToken, String dogId, String activityType) throws Exception {
-        JsonNode activity = readBody(mockMvc.perform(post("/api/v1/dogs/" + dogId + "/physical-activities")
+        JsonNode activity = readBody(mockMvc.perform(post("/api/v1/physical-activities")
                         .header("Authorization", "Bearer " + accessToken)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"activityType\":\"" + activityType + "\"}"))
+                        .content("{\"dogIds\":[\"" + dogId + "\"],\"activityType\":\"" + activityType + "\"}"))
                 .andExpect(status().isCreated()));
         return activity.get("id").asString();
     }

@@ -99,10 +99,9 @@ public class PostService {
     @Transactional
     public PostResponse createPost(CreatePostRequest request) {
         UUID authorId = currentUserProvider.getCurrentUserId();
-        if (request.dogId() != null) {
-            dogService.getOwnedDog(request.dogId());
-        }
-        Post post = new Post(UUID.randomUUID(), authorId, request.dogId(), null, request.content(), null, Instant.now());
+        List<UUID> dogIds = request.dogIds() != null ? request.dogIds().stream().distinct().toList() : List.of();
+        dogIds.forEach(dogService::getOwnedDog);
+        Post post = new Post(UUID.randomUUID(), authorId, dogIds, null, request.content(), null, Instant.now());
         postRepository.save(post);
         return toResponse(post);
     }
@@ -124,14 +123,14 @@ public class PostService {
                 ? request.content()
                 : buildSessionCaption(dog, session);
 
-        Post post = new Post(UUID.randomUUID(), authorId, session.dogId(), sessionId, content, null, Instant.now());
+        Post post = new Post(UUID.randomUUID(), authorId, List.of(session.dogId()), sessionId, content, null, Instant.now());
         postRepository.save(post);
         return toResponse(post);
     }
 
     @Transactional
     public PostResponse createPostFromActivity(UUID activityId, CreatePostFromActivityRequest request) {
-        // getActivity() enforces that the activity's dog belongs to the current user.
+        // getActivity() enforces that every one of the activity's dogs belongs to the current user.
         PhysicalActivityResponse activity = physicalActivityService.getActivity(activityId);
         if (activity.status() != ActivityStatus.COMPLETED) {
             throw new BusinessRuleException("Only completed physical activities can be shared as a post");
@@ -141,12 +140,12 @@ public class PostService {
         }
 
         UUID authorId = currentUserProvider.getCurrentUserId();
-        Dog dog = dogService.getOwnedDog(activity.dogId());
+        List<Dog> dogs = activity.dogIds().stream().map(dogService::getOwnedDog).toList();
         String content = request.content() != null && !request.content().isBlank()
                 ? request.content()
-                : buildActivityCaption(dog, activity);
+                : buildActivityCaption(dogs, activity);
 
-        Post post = new Post(UUID.randomUUID(), authorId, activity.dogId(), null, activityId, content, null, Instant.now());
+        Post post = new Post(UUID.randomUUID(), authorId, activity.dogIds(), null, activityId, content, null, Instant.now());
         postRepository.save(post);
         return toResponse(post);
     }
@@ -261,14 +260,30 @@ public class PostService {
                 .formatted(dog.getName(), session.durationMinutes(), exercisePart);
     }
 
-    private String buildActivityCaption(Dog dog, PhysicalActivityResponse activity) {
+    private String buildActivityCaption(List<Dog> dogs, PhysicalActivityResponse activity) {
         String activityLabel = activityLabel(activity.activityType());
+        String dogNames = joinDogNames(dogs);
         if (SupportedLocale.isBokmal()) {
             return "%s fullførte %d minutter med %s!"
-                    .formatted(dog.getName(), activity.durationMinutes(), activityLabel);
+                    .formatted(dogNames, activity.durationMinutes(), activityLabel);
         }
         return "%s finished %d minutes of %s!"
-                .formatted(dog.getName(), activity.durationMinutes(), activityLabel);
+                .formatted(dogNames, activity.durationMinutes(), activityLabel);
+    }
+
+    /** Joins dog names in natural-language list form: "Rex", "Rex and Fido", "Rex, Fido and Milo". */
+    private String joinDogNames(List<Dog> dogs) {
+        List<String> names = dogs.stream().map(Dog::getName).toList();
+        boolean bokmal = SupportedLocale.isBokmal();
+        String conjunction = bokmal ? "og" : "and";
+        if (names.size() <= 1) {
+            return names.isEmpty() ? "" : names.getFirst();
+        }
+        if (names.size() == 2) {
+            return "%s %s %s".formatted(names.get(0), conjunction, names.get(1));
+        }
+        String allButLast = String.join(", ", names.subList(0, names.size() - 1));
+        return "%s %s %s".formatted(allButLast, conjunction, names.getLast());
     }
 
     private String activityLabel(ActivityType activityType) {
@@ -298,7 +313,7 @@ public class PostService {
 
     private List<PostResponse> enrich(List<Post> posts) {
         List<UUID> authorIds = posts.stream().map(Post::getAuthorId).distinct().toList();
-        List<UUID> dogIds = posts.stream().map(Post::getDogId).filter(Objects::nonNull).distinct().toList();
+        List<UUID> dogIds = posts.stream().flatMap(post -> post.getDogIds().stream()).distinct().toList();
         List<UUID> postIds = posts.stream().map(Post::getId).toList();
 
         Map<UUID, User> authorsById = new HashMap<>();
@@ -318,9 +333,7 @@ public class PostService {
         Map<UUID, User> authorsById = new HashMap<>();
         userRepository.findById(post.getAuthorId()).ifPresent(user -> authorsById.put(user.getId(), user));
         Map<UUID, Dog> dogsById = new HashMap<>();
-        if (post.getDogId() != null) {
-            dogRepository.findById(post.getDogId()).ifPresent(dog -> dogsById.put(dog.getId(), dog));
-        }
+        dogRepository.findAllById(post.getDogIds()).forEach(dog -> dogsById.put(dog.getId(), dog));
         List<UUID> postIds = List.of(post.getId());
         Map<UUID, Long> likeCounts = likeService.countByPostIds(postIds);
         Map<UUID, Long> commentCounts = commentService.countByPostIds(postIds);
@@ -337,14 +350,18 @@ public class PostService {
             Set<UUID> likedPostIds
     ) {
         User author = authorsById.get(post.getAuthorId());
-        Dog dog = post.getDogId() != null ? dogsById.get(post.getDogId()) : null;
+        List<String> dogNames = post.getDogIds().stream()
+                .map(dogsById::get)
+                .filter(Objects::nonNull)
+                .map(Dog::getName)
+                .toList();
         return new PostResponse(
                 post.getId(),
                 post.getAuthorId(),
                 author != null ? author.getName() : null,
                 author != null ? author.getAvatarUrl() : null,
-                post.getDogId(),
-                dog != null ? dog.getName() : null,
+                post.getDogIds(),
+                dogNames,
                 post.getTrainingSessionId(),
                 post.getPhysicalActivityId(),
                 post.getContent(),
