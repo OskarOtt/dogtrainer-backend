@@ -101,12 +101,12 @@ class TrainingSessionControllerIntegrationTest {
         assertThat(completed.get("status").asString()).isEqualTo("COMPLETED");
         assertThat(completed.get("completedAt").isNull()).isFalse();
 
-        // cannot add exercises to a completed session
+        // exercises can still be added to a completed session (e.g. logging something forgotten)
         mockMvc.perform(post("/api/v1/training-sessions/" + sessionId + "/exercises")
                         .header("Authorization", "Bearer " + ownerToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"exerciseId\":\"" + exerciseId + "\",\"repetitions\":1,\"successfulRepetitions\":1}"))
-                .andExpect(status().isConflict());
+                .andExpect(status().isCreated());
 
         // cannot complete an already-completed session again
         mockMvc.perform(post("/api/v1/training-sessions/" + sessionId + "/complete")
@@ -129,6 +129,13 @@ class TrainingSessionControllerIntegrationTest {
                         .header("Authorization", "Bearer " + ownerToken))
                 .andExpect(status().isOk()));
         assertThat(cancelled.get("status").asString()).isEqualTo("CANCELLED");
+
+        // cannot add exercises to a cancelled session
+        mockMvc.perform(post("/api/v1/training-sessions/" + secondSessionId + "/exercises")
+                        .header("Authorization", "Bearer " + ownerToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"exerciseId\":\"" + exerciseId + "\",\"repetitions\":1,\"successfulRepetitions\":1}"))
+                .andExpect(status().isConflict());
 
         // dog's session list now has both sessions
         JsonNode allSessions = readBody(mockMvc.perform(get("/api/v1/dogs/" + dogId + "/training-sessions")

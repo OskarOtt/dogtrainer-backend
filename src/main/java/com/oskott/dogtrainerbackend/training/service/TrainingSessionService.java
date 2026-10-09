@@ -159,7 +159,7 @@ public class TrainingSessionService {
     @Transactional
     public TrainingSessionResponse addSessionExercise(UUID sessionId, AddSessionExerciseRequest request) {
         TrainingSession session = getOwnedSession(sessionId);
-        requireInProgress(session);
+        requireNotCancelled(session);
         if (!exerciseRepository.existsById(request.exerciseId())) {
             throw ResourceNotFoundException.forEntity("Exercise", request.exerciseId());
         }
@@ -210,9 +210,13 @@ public class TrainingSessionService {
         return toResponse(session);
     }
 
-    private void requireInProgress(TrainingSession session) {
-        if (session.getStatus() != SessionStatus.IN_PROGRESS) {
-            throw new BusinessRuleException("Exercises can only be modified while the session is in progress");
+    /**
+     * Allows adding exercises while a session is in progress or after it's completed (so users
+     * can note something they forgot to log), but never to a cancelled session.
+     */
+    private void requireNotCancelled(TrainingSession session) {
+        if (session.getStatus() == SessionStatus.CANCELLED) {
+            throw new BusinessRuleException("Exercises cannot be added to a cancelled session");
         }
     }
 

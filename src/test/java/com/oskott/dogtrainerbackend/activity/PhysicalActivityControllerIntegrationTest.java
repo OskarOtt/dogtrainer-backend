@@ -40,15 +40,17 @@ class PhysicalActivityControllerIntegrationTest {
         assertThat(emptyActivities).isEmpty();
 
         // start an activity with a default title
-        JsonNode activity = readBody(mockMvc.perform(post("/api/v1/dogs/" + dogId + "/physical-activities")
+        JsonNode activity = readBody(mockMvc.perform(post("/api/v1/physical-activities")
                         .header("Authorization", "Bearer " + ownerToken)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"activityType\":\"WALK\"}"))
+                        .content("{\"dogIds\":[\"" + dogId + "\"],\"activityType\":\"WALK\"}"))
                 .andExpect(status().isCreated()));
         String activityId = activity.get("id").asString();
         assertThat(activity.get("status").asString()).isEqualTo("IN_PROGRESS");
         assertThat(activity.get("activityType").asString()).isEqualTo("WALK");
         assertThat(activity.get("title").asString()).isEqualTo("Walk");
+        assertThat(activity.get("dogIds")).hasSize(1);
+        assertThat(activity.get("dogIds").get(0).asString()).isEqualTo(dogId);
 
         // another user cannot see or act on this activity
         mockMvc.perform(get("/api/v1/physical-activities/" + activityId)
@@ -101,10 +103,10 @@ class PhysicalActivityControllerIntegrationTest {
                 .andExpect(status().isConflict());
 
         // a second activity can be cancelled
-        JsonNode secondActivity = readBody(mockMvc.perform(post("/api/v1/dogs/" + dogId + "/physical-activities")
+        JsonNode secondActivity = readBody(mockMvc.perform(post("/api/v1/physical-activities")
                         .header("Authorization", "Bearer " + ownerToken)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"activityType\":\"RUN\",\"title\":\"Morning run\"}"))
+                        .content("{\"dogIds\":[\"" + dogId + "\"],\"activityType\":\"RUN\",\"title\":\"Morning run\"}"))
                 .andExpect(status().isCreated()));
         String secondActivityId = secondActivity.get("id").asString();
         assertThat(secondActivity.get("title").asString()).isEqualTo("Morning run");
@@ -121,17 +123,58 @@ class PhysicalActivityControllerIntegrationTest {
     }
 
     @Test
+    void activityCanBeLoggedAgainstMultipleDogsAndShowsUpInEachDogsList() throws Exception {
+        String ownerToken = registerAndGetAccessToken("multi-dog-activity-owner-" + System.nanoTime() + "@example.com");
+        String otherToken = registerAndGetAccessToken("multi-dog-activity-other-" + System.nanoTime() + "@example.com");
+        String firstDogId = createDog(ownerToken, "Rex");
+        String secondDogId = createDog(ownerToken, "Fido");
+        String otherUsersDogId = createDog(otherToken, "NotYours");
+
+        JsonNode activity = readBody(mockMvc.perform(post("/api/v1/physical-activities")
+                        .header("Authorization", "Bearer " + ownerToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"dogIds\":[\"" + firstDogId + "\",\"" + secondDogId + "\"],\"activityType\":\"HIKE\"}"))
+                .andExpect(status().isCreated()));
+        assertThat(activity.get("dogIds")).hasSize(2);
+
+        JsonNode firstDogActivities = readBody(mockMvc.perform(get("/api/v1/dogs/" + firstDogId + "/physical-activities")
+                        .header("Authorization", "Bearer " + ownerToken))
+                .andExpect(status().isOk()));
+        assertThat(firstDogActivities).hasSize(1);
+
+        JsonNode secondDogActivities = readBody(mockMvc.perform(get("/api/v1/dogs/" + secondDogId + "/physical-activities")
+                        .header("Authorization", "Bearer " + ownerToken))
+                .andExpect(status().isOk()));
+        assertThat(secondDogActivities).hasSize(1);
+
+        // can't create an activity that includes a dog you don't own
+        mockMvc.perform(post("/api/v1/physical-activities")
+                        .header("Authorization", "Bearer " + ownerToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"dogIds\":[\"" + firstDogId + "\",\"" + otherUsersDogId + "\"],\"activityType\":\"HIKE\"}"))
+                .andExpect(status().isForbidden());
+
+        // a request with no dogs at all is rejected
+        mockMvc.perform(post("/api/v1/physical-activities")
+                        .header("Authorization", "Bearer " + ownerToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"dogIds\":[],\"activityType\":\"HIKE\"}"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
     void manualActivityCreationGoesStraightToCompletedAndRejectsFutureOrOtherUsersDog() throws Exception {
         String ownerToken = registerAndGetAccessToken("manual-activity-owner-" + System.nanoTime() + "@example.com");
         String otherToken = registerAndGetAccessToken("manual-activity-other-" + System.nanoTime() + "@example.com");
         String dogId = createDog(ownerToken, "Rex");
+        String otherUsersDogId = createDog(otherToken, "NotYours");
 
         String startedAt = java.time.Instant.now().minus(java.time.Duration.ofHours(1)).toString();
-        JsonNode activity = readBody(mockMvc.perform(post("/api/v1/dogs/" + dogId + "/physical-activities/manual")
+        JsonNode activity = readBody(mockMvc.perform(post("/api/v1/physical-activities/manual")
                         .header("Authorization", "Bearer " + ownerToken)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"activityType\":\"RUN\",\"startedAt\":\"" + startedAt + "\",\"durationMinutes\":40,"
-                                + "\"notes\":\"Forgot to track this one\"}"))
+                        .content("{\"dogIds\":[\"" + dogId + "\"],\"activityType\":\"RUN\",\"startedAt\":\"" + startedAt
+                                + "\",\"durationMinutes\":40,\"notes\":\"Forgot to track this one\"}"))
                 .andExpect(status().isCreated()));
         assertThat(activity.get("status").asString()).isEqualTo("COMPLETED");
         assertThat(activity.get("durationMinutes").asInt()).isEqualTo(40);
@@ -141,18 +184,46 @@ class PhysicalActivityControllerIntegrationTest {
         // an activity whose startedAt is valid (past) but whose computed completedAt (startedAt +
         // duration) would land in the future is rejected
         String almostNow = java.time.Instant.now().minus(java.time.Duration.ofMinutes(10)).toString();
-        mockMvc.perform(post("/api/v1/dogs/" + dogId + "/physical-activities/manual")
+        mockMvc.perform(post("/api/v1/physical-activities/manual")
                         .header("Authorization", "Bearer " + ownerToken)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"activityType\":\"WALK\",\"startedAt\":\"" + almostNow + "\",\"durationMinutes\":60}"))
+                        .content("{\"dogIds\":[\"" + dogId + "\"],\"activityType\":\"WALK\",\"startedAt\":\"" + almostNow
+                                + "\",\"durationMinutes\":60}"))
                 .andExpect(status().isConflict());
 
         // another user cannot log a manual activity against someone else's dog
-        mockMvc.perform(post("/api/v1/dogs/" + dogId + "/physical-activities/manual")
+        mockMvc.perform(post("/api/v1/physical-activities/manual")
                         .header("Authorization", "Bearer " + otherToken)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"activityType\":\"WALK\",\"startedAt\":\"" + startedAt + "\",\"durationMinutes\":30}"))
+                        .content("{\"dogIds\":[\"" + dogId + "\"],\"activityType\":\"WALK\",\"startedAt\":\"" + startedAt
+                                + "\",\"durationMinutes\":30}"))
                 .andExpect(status().isForbidden());
+
+        // sanity check the "someone else's dog" assertion above isn't vacuous
+        assertThat(otherUsersDogId).isNotEqualTo(dogId);
+    }
+
+    @Test
+    void legacySingleDogEndpointsAndResponseFieldsStillWorkForOldAppVersions() throws Exception {
+        String ownerToken = registerAndGetAccessToken("legacy-activity-owner-" + System.nanoTime() + "@example.com");
+        String dogId = createDog(ownerToken, "Rex");
+
+        JsonNode activity = readBody(mockMvc.perform(post("/api/v1/dogs/" + dogId + "/physical-activities")
+                        .header("Authorization", "Bearer " + ownerToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"activityType\":\"WALK\"}"))
+                .andExpect(status().isCreated()));
+        assertThat(activity.get("dogId").asString()).isEqualTo(dogId);
+        assertThat(activity.get("dogIds").get(0).asString()).isEqualTo(dogId);
+
+        String startedAt = java.time.Instant.now().minus(java.time.Duration.ofHours(1)).toString();
+        JsonNode manual = readBody(mockMvc.perform(post("/api/v1/dogs/" + dogId + "/physical-activities/manual")
+                        .header("Authorization", "Bearer " + ownerToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"activityType\":\"RUN\",\"startedAt\":\"" + startedAt + "\",\"durationMinutes\":40}"))
+                .andExpect(status().isCreated()));
+        assertThat(manual.get("status").asString()).isEqualTo("COMPLETED");
+        assertThat(manual.get("dogId").asString()).isEqualTo(dogId);
     }
 
     private String createDog(String accessToken, String name) throws Exception {

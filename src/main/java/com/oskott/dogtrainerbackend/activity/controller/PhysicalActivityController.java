@@ -2,6 +2,8 @@ package com.oskott.dogtrainerbackend.activity.controller;
 
 import com.oskott.dogtrainerbackend.activity.dto.CreateManualPhysicalActivityRequest;
 import com.oskott.dogtrainerbackend.activity.dto.CreatePhysicalActivityRequest;
+import com.oskott.dogtrainerbackend.activity.dto.LegacyCreateManualPhysicalActivityRequest;
+import com.oskott.dogtrainerbackend.activity.dto.LegacyCreatePhysicalActivityRequest;
 import com.oskott.dogtrainerbackend.activity.dto.PhysicalActivityResponse;
 import com.oskott.dogtrainerbackend.activity.dto.UpdatePhysicalActivityRequest;
 import com.oskott.dogtrainerbackend.activity.service.PhysicalActivityService;
@@ -34,20 +36,34 @@ public class PhysicalActivityController {
         return physicalActivityService.listActivitiesForDog(dogId);
     }
 
+    /** @deprecated kept for app versions released before multi-dog activities; use {@code POST /physical-activities}. */
+    @Deprecated
     @PostMapping("/dogs/{dogId}/physical-activities")
-    public ResponseEntity<PhysicalActivityResponse> createActivity(
+    public ResponseEntity<PhysicalActivityResponse> createActivityLegacy(
             @PathVariable UUID dogId,
-            @Valid @RequestBody CreatePhysicalActivityRequest request
+            @Valid @RequestBody LegacyCreatePhysicalActivityRequest request
     ) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(physicalActivityService.createActivity(dogId, request));
+        return ResponseEntity.status(HttpStatus.CREATED).body(physicalActivityService.createActivity(request.toRequest(dogId)));
     }
 
+    /** @deprecated kept for app versions released before multi-dog activities; use {@code POST /physical-activities/manual}. */
+    @Deprecated
     @PostMapping("/dogs/{dogId}/physical-activities/manual")
-    public ResponseEntity<PhysicalActivityResponse> createManualActivity(
+    public ResponseEntity<PhysicalActivityResponse> createManualActivityLegacy(
             @PathVariable UUID dogId,
-            @Valid @RequestBody CreateManualPhysicalActivityRequest request
+            @Valid @RequestBody LegacyCreateManualPhysicalActivityRequest request
     ) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(physicalActivityService.createManualActivity(dogId, request));
+        return ResponseEntity.status(HttpStatus.CREATED).body(physicalActivityService.createManualActivity(request.toRequest(dogId)));
+    }
+
+    @PostMapping("/physical-activities")
+    public ResponseEntity<PhysicalActivityResponse> createActivity(@Valid @RequestBody CreatePhysicalActivityRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(physicalActivityService.createActivity(request));
+    }
+
+    @PostMapping("/physical-activities/manual")
+    public ResponseEntity<PhysicalActivityResponse> createManualActivity(@Valid @RequestBody CreateManualPhysicalActivityRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(physicalActivityService.createManualActivity(request));
     }
 
     @GetMapping("/physical-activities/{id}")

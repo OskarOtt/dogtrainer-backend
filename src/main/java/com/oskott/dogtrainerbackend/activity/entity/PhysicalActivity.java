@@ -1,13 +1,20 @@
 package com.oskott.dogtrainerbackend.activity.entity;
 
+import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OrderColumn;
 import jakarta.persistence.Table;
 
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -23,8 +30,11 @@ public class PhysicalActivity {
     @Id
     private UUID id;
 
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "physical_activity_dogs", joinColumns = @JoinColumn(name = "activity_id"))
+    @OrderColumn(name = "list_index")
     @Column(name = "dog_id", nullable = false)
-    private UUID dogId;
+    private List<UUID> dogIds = new ArrayList<>();
 
     @Enumerated(EnumType.STRING)
     @Column(name = "activity_type", nullable = false)
@@ -58,9 +68,9 @@ public class PhysicalActivity {
         // JPA
     }
 
-    public PhysicalActivity(UUID id, UUID dogId, ActivityType activityType, String title, Instant startedAt, ActivityStatus status) {
+    public PhysicalActivity(UUID id, List<UUID> dogIds, ActivityType activityType, String title, Instant startedAt, ActivityStatus status) {
         this.id = id;
-        this.dogId = dogId;
+        this.dogIds = new ArrayList<>(dogIds);
         this.activityType = activityType;
         this.title = title;
         this.startedAt = startedAt;
@@ -72,8 +82,8 @@ public class PhysicalActivity {
         return id;
     }
 
-    public UUID getDogId() {
-        return dogId;
+    public List<UUID> getDogIds() {
+        return dogIds;
     }
 
     public ActivityType getActivityType() {

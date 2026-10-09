@@ -1,11 +1,18 @@
 package com.oskott.dogtrainerbackend.post.entity;
 
+import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OrderColumn;
 import jakarta.persistence.Table;
 
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -18,8 +25,11 @@ public class Post {
     @Column(name = "author_id", nullable = false)
     private UUID authorId;
 
-    @Column(name = "dog_id")
-    private UUID dogId;
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "post_dogs", joinColumns = @JoinColumn(name = "post_id"))
+    @OrderColumn(name = "list_index")
+    @Column(name = "dog_id", nullable = false)
+    private List<UUID> dogIds = new ArrayList<>();
 
     @Column(name = "training_session_id")
     private UUID trainingSessionId;
@@ -40,14 +50,14 @@ public class Post {
         // JPA
     }
 
-    public Post(UUID id, UUID authorId, UUID dogId, UUID trainingSessionId, String content, String imageUrl, Instant createdAt) {
-        this(id, authorId, dogId, trainingSessionId, null, content, imageUrl, createdAt);
+    public Post(UUID id, UUID authorId, List<UUID> dogIds, UUID trainingSessionId, String content, String imageUrl, Instant createdAt) {
+        this(id, authorId, dogIds, trainingSessionId, null, content, imageUrl, createdAt);
     }
 
     public Post(
             UUID id,
             UUID authorId,
-            UUID dogId,
+            List<UUID> dogIds,
             UUID trainingSessionId,
             UUID physicalActivityId,
             String content,
@@ -56,7 +66,7 @@ public class Post {
     ) {
         this.id = id;
         this.authorId = authorId;
-        this.dogId = dogId;
+        this.dogIds = new ArrayList<>(dogIds);
         this.trainingSessionId = trainingSessionId;
         this.physicalActivityId = physicalActivityId;
         this.content = content;
@@ -72,8 +82,8 @@ public class Post {
         return authorId;
     }
 
-    public UUID getDogId() {
-        return dogId;
+    public List<UUID> getDogIds() {
+        return dogIds;
     }
 
     public UUID getTrainingSessionId() {
