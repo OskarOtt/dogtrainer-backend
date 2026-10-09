@@ -11,7 +11,7 @@
                 <constraints nullable="false" foreignKeyName="fk_post_dogs_post" references="posts(id)"/>
             </column>
             <column name="dog_id" type="UUID">
-                <constraints nullable="false" foreignKeyName="fk_post_dogs_dog" references="dogs(id)"/>
+                <constraints nullable="false" foreignKeyName="fk_post_dogs_dog" references="dogs(id)" deleteCascade="true"/>
             </column>
             <column name="list_index" type="INT">
                 <constraints nullable="false"/>

@@ -417,6 +417,21 @@ class PostControllerIntegrationTest {
         return out.toByteArray();
     }
 
+    @Test
+    void legacySingleDogIdIsStillAcceptedAndReturnedForOldAppVersions() throws Exception {
+        String ownerToken = registerAndGetAccessToken("legacy-post-owner-" + System.nanoTime() + "@example.com");
+        String dogId = createDog(ownerToken, "Rex");
+
+        JsonNode created = readBody(mockMvc.perform(post("/api/v1/posts")
+                        .header("Authorization", "Bearer " + ownerToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"content\":\"Old app post\",\"dogId\":\"" + dogId + "\"}"))
+                .andExpect(status().isCreated()));
+        assertThat(created.get("dogId").asString()).isEqualTo(dogId);
+        assertThat(created.get("dogName").asString()).isEqualTo("Rex");
+        assertThat(created.get("dogIds").get(0).asString()).isEqualTo(dogId);
+    }
+
     private String createStandalonePost(String accessToken, String content) throws Exception {
         JsonNode created = readBody(mockMvc.perform(post("/api/v1/posts")
                         .header("Authorization", "Bearer " + accessToken)

@@ -2,6 +2,8 @@ package com.oskott.dogtrainerbackend.activity.controller;
 
 import com.oskott.dogtrainerbackend.activity.dto.CreateManualPhysicalActivityRequest;
 import com.oskott.dogtrainerbackend.activity.dto.CreatePhysicalActivityRequest;
+import com.oskott.dogtrainerbackend.activity.dto.LegacyCreateManualPhysicalActivityRequest;
+import com.oskott.dogtrainerbackend.activity.dto.LegacyCreatePhysicalActivityRequest;
 import com.oskott.dogtrainerbackend.activity.dto.PhysicalActivityResponse;
 import com.oskott.dogtrainerbackend.activity.dto.UpdatePhysicalActivityRequest;
 import com.oskott.dogtrainerbackend.activity.service.PhysicalActivityService;
@@ -32,6 +34,26 @@ public class PhysicalActivityController {
     @GetMapping("/dogs/{dogId}/physical-activities")
     public List<PhysicalActivityResponse> listActivities(@PathVariable UUID dogId) {
         return physicalActivityService.listActivitiesForDog(dogId);
+    }
+
+    /** @deprecated kept for app versions released before multi-dog activities; use {@code POST /physical-activities}. */
+    @Deprecated
+    @PostMapping("/dogs/{dogId}/physical-activities")
+    public ResponseEntity<PhysicalActivityResponse> createActivityLegacy(
+            @PathVariable UUID dogId,
+            @Valid @RequestBody LegacyCreatePhysicalActivityRequest request
+    ) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(physicalActivityService.createActivity(request.toRequest(dogId)));
+    }
+
+    /** @deprecated kept for app versions released before multi-dog activities; use {@code POST /physical-activities/manual}. */
+    @Deprecated
+    @PostMapping("/dogs/{dogId}/physical-activities/manual")
+    public ResponseEntity<PhysicalActivityResponse> createManualActivityLegacy(
+            @PathVariable UUID dogId,
+            @Valid @RequestBody LegacyCreateManualPhysicalActivityRequest request
+    ) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(physicalActivityService.createManualActivity(request.toRequest(dogId)));
     }
 
     @PostMapping("/physical-activities")

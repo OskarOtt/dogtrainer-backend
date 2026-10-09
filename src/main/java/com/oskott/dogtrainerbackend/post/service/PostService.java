@@ -99,7 +99,7 @@ public class PostService {
     @Transactional
     public PostResponse createPost(CreatePostRequest request) {
         UUID authorId = currentUserProvider.getCurrentUserId();
-        List<UUID> dogIds = request.dogIds() != null ? request.dogIds().stream().distinct().toList() : List.of();
+        List<UUID> dogIds = request.resolvedDogIds().stream().distinct().toList();
         dogIds.forEach(dogService::getOwnedDog);
         Post post = new Post(UUID.randomUUID(), authorId, dogIds, null, request.content(), null, Instant.now());
         postRepository.save(post);

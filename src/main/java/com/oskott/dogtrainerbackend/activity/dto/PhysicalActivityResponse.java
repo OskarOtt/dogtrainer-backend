@@ -1,5 +1,6 @@
 package com.oskott.dogtrainerbackend.activity.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.oskott.dogtrainerbackend.activity.entity.ActivityStatus;
 import com.oskott.dogtrainerbackend.activity.entity.ActivityType;
 import com.oskott.dogtrainerbackend.activity.entity.PhysicalActivity;
@@ -21,6 +22,13 @@ public record PhysicalActivityResponse(
         Integer durationMinutes,
         ActivityStatus status
 ) {
+
+    /** @deprecated first dog of {@link #dogIds()}; kept for app versions released before multi-dog activities. */
+    @Deprecated
+    @JsonProperty("dogId")
+    public UUID legacyDogId() {
+        return dogIds.isEmpty() ? null : dogIds.getFirst();
+    }
 
     public static PhysicalActivityResponse from(PhysicalActivity activity) {
         return new PhysicalActivityResponse(
