@@ -7,6 +7,7 @@ import com.oskott.dogtrainerbackend.comment.repository.CommentRepository;
 import com.oskott.dogtrainerbackend.common.exception.AccessDeniedForResourceException;
 import com.oskott.dogtrainerbackend.common.exception.ResourceNotFoundException;
 import com.oskott.dogtrainerbackend.common.security.CurrentUserProvider;
+import com.oskott.dogtrainerbackend.notification.service.NotificationService;
 import com.oskott.dogtrainerbackend.post.entity.Post;
 import com.oskott.dogtrainerbackend.post.repository.PostRepository;
 import com.oskott.dogtrainerbackend.user.entity.User;
@@ -27,27 +28,30 @@ public class CommentService {
     private final PostRepository postRepository;
     private final UserRepository userRepository;
     private final CurrentUserProvider currentUserProvider;
+    private final NotificationService notificationService;
 
     public CommentService(
             CommentRepository commentRepository,
             PostRepository postRepository,
             UserRepository userRepository,
-            CurrentUserProvider currentUserProvider
+            CurrentUserProvider currentUserProvider,
+            NotificationService notificationService
     ) {
         this.commentRepository = commentRepository;
         this.postRepository = postRepository;
         this.userRepository = userRepository;
         this.currentUserProvider = currentUserProvider;
+        this.notificationService = notificationService;
     }
 
     @Transactional
     public CommentResponse createComment(UUID postId, CreateCommentRequest request) {
-        if (!postRepository.existsById(postId)) {
-            throw ResourceNotFoundException.forEntity("Post", postId);
-        }
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> ResourceNotFoundException.forEntity("Post", postId));
         UUID authorId = currentUserProvider.getCurrentUserId();
         Comment comment = new Comment(UUID.randomUUID(), postId, authorId, request.content(), Instant.now());
         commentRepository.save(comment);
+        notificationService.notifyComment(comment, post);
         return toResponse(comment);
     }
 

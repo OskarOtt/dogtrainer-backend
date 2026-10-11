@@ -1,0 +1,111 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.29.xsd">
+
+    <!--
+        Push notifications. Users are anonymized in place on account deletion (never removed), so
+        the ON DELETE CASCADE rules here are only a safety net - UserService.deleteAccount removes
+        the user's devices and notifications explicitly.
+    -->
+    <changeSet id="033-create-user-devices" author="oskott">
+        <createTable tableName="user_devices">
+            <column name="id" type="UUID">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="user_id" type="UUID">
+                <constraints nullable="false" foreignKeyName="fk_user_devices_user" references="users(id)" deleteCascade="true"/>
+            </column>
+            <column name="expo_push_token" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="platform" type="VARCHAR(16)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="locale" type="VARCHAR(8)" defaultValue="en">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="last_seen_at" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addUniqueConstraint tableName="user_devices" columnNames="expo_push_token" constraintName="uq_user_devices_token"/>
+        <createIndex indexName="idx_user_devices_user_id" tableName="user_devices">
+            <column name="user_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="033-create-notifications" author="oskott">
+        <createTable tableName="notifications">
+            <column name="id" type="UUID">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="recipient_id" type="UUID">
+                <constraints nullable="false" foreignKeyName="fk_notifications_recipient" references="users(id)" deleteCascade="true"/>
+            </column>
+            <column name="actor_id" type="UUID">
+                <constraints nullable="true" foreignKeyName="fk_notifications_actor" references="users(id)" deleteCascade="true"/>
+            </column>
+            <column name="type" type="VARCHAR(32)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="title" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="body" type="VARCHAR(500)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="reference_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="dedupe_key" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="is_read" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addUniqueConstraint tableName="notifications" columnNames="recipient_id, dedupe_key" constraintName="uq_notifications_recipient_dedupe"/>
+        <createIndex indexName="idx_notifications_recipient_created" tableName="notifications">
+            <column name="recipient_id"/>
+            <column name="created_at" descending="true"/>
+        </createIndex>
+        <createIndex indexName="idx_notifications_recipient_unread" tableName="notifications">
+            <column name="recipient_id"/>
+            <column name="is_read"/>
+        </createIndex>
+        <createIndex indexName="idx_notifications_reference" tableName="notifications">
+            <column name="reference_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="033-create-push-tickets" author="oskott">
+        <createTable tableName="push_tickets">
+            <column name="id" type="UUID">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="expo_ticket_id" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="expo_push_token" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addUniqueConstraint tableName="push_tickets" columnNames="expo_ticket_id" constraintName="uq_push_tickets_ticket"/>
+        <createIndex indexName="idx_push_tickets_created_at" tableName="push_tickets">
+            <column name="created_at"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

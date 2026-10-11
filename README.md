@@ -45,3 +45,20 @@ Note: the existing `PUT /api/v1/users/me/username` endpoint actually updates the
 `name` (kept as-is for API/client compatibility — the URL and request shape predate the new
 `username` field); its backend DTO/service method are named `UpdateDisplayNameRequest`/
 `updateDisplayName` to avoid confusion with the new, unrelated `username` column.
+
+## Push notifications
+
+Users get an in-app notification (and an Expo push) when someone they follow posts, when someone
+comments on their post, and when someone follows them. Likes never notify, and users are never
+notified about their own actions or by users they have a block with.
+
+- `PUT /api/v1/devices` (`{expoPushToken, platform: IOS|ANDROID, locale}`) registers/re-assigns a
+  token to the authenticated user; `DELETE /api/v1/devices` (`{expoPushToken}`) removes the
+  caller's own token.
+- `GET /api/v1/notifications?cursor&limit`, `GET /api/v1/notifications/unread-count`,
+  `POST /api/v1/notifications/{id}/read`, `POST /api/v1/notifications/read-all`.
+- Pushes are sent asynchronously after the triggering transaction commits. Expo receipts are
+  polled (`app.expo.receipt-delay`, `app.expo.receipt-poll-interval`) and tokens reported as
+  `DeviceNotRegistered` are removed.
+- Optional `EXPO_ACCESS_TOKEN` (add to the Kubernetes secret) is sent as a Bearer token when Expo
+  "enhanced push security" is enabled for the project.
