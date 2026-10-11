@@ -17,6 +17,7 @@ import com.oskott.dogtrainerbackend.common.security.CurrentUserProvider;
 import com.oskott.dogtrainerbackend.dog.entity.Dog;
 import com.oskott.dogtrainerbackend.dog.repository.DogRepository;
 import com.oskott.dogtrainerbackend.follow.repository.FollowRepository;
+import com.oskott.dogtrainerbackend.notification.service.NotificationService;
 import com.oskott.dogtrainerbackend.storage.ImageProcessingService;
 import com.oskott.dogtrainerbackend.storage.MediaCategory;
 import com.oskott.dogtrainerbackend.storage.StorageService;
@@ -59,6 +60,7 @@ public class UserService {
     private final ExternalIdentityRepository externalIdentityRepository;
     private final ExternalIdentityVerifier externalIdentityVerifier;
     private final AppleTokenRevoker appleTokenRevoker;
+    private final NotificationService notificationService;
     private final long reauthenticationMaxAgeSeconds;
 
     public UserService(
@@ -73,6 +75,7 @@ public class UserService {
             ExternalIdentityRepository externalIdentityRepository,
             ExternalIdentityVerifier externalIdentityVerifier,
             AppleTokenRevoker appleTokenRevoker,
+            NotificationService notificationService,
             @Value("${app.auth.reauthentication-max-age-seconds:300}") long reauthenticationMaxAgeSeconds
     ) {
         this.userRepository = userRepository;
@@ -86,6 +89,7 @@ public class UserService {
         this.externalIdentityRepository = externalIdentityRepository;
         this.externalIdentityVerifier = externalIdentityVerifier;
         this.appleTokenRevoker = appleTokenRevoker;
+        this.notificationService = notificationService;
         this.reauthenticationMaxAgeSeconds = reauthenticationMaxAgeSeconds;
     }
 
@@ -177,6 +181,8 @@ public class UserService {
         user.setPassword(passwordEncoder.encode(UUID.randomUUID().toString()));
         user.setAvatarUrl(null);
         user.setDeletedAt(Instant.now());
+        // Bulk deletes clear the persistence context, so this must come after the entity changes above.
+        notificationService.deleteAllForUser(userId);
     }
 
     private void verifyDeletion(DeleteAccountRequest request, User user) {

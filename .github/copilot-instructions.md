@@ -52,6 +52,16 @@ Spring Boot 4.1 / Java 21 REST API (Maven) backing the Flink dog-training app.
   Cloudflare R2 via the AWS S3 SDK (`R2ClientConfig`/`R2Properties`), presigning PUT URLs for
   clients and validating/processing images (via `thumbnailator` + TwelveMonkeys WebP support)
   before they're referenced by entities like dogs/posts.
+- **Push notifications**: `notification/` stores in-app notifications (NEW_POST, COMMENT,
+  NEW_FOLLOWER only) and delivers them via the Expo Push API (`ExpoPushClient`, plain `RestClient`).
+  `NotificationService` creates rows inside the caller's transaction (deduped by the unique
+  `(recipient_id, dedupe_key)`), then publishes a `PushRequestedEvent`; `PushDeliveryService`
+  sends it `@Async` after commit on the bounded `pushExecutor` (`PushConfig`), so a failed push
+  never loses or blocks the notification. Expo tickets are stored in `push_tickets` and
+  `PushReceiptPoller` (`@Scheduled`, `FOR UPDATE SKIP LOCKED`, safe across replicas) removes
+  `DeviceNotRegistered` tokens. Config: `app.expo.*` (optional `EXPO_ACCESS_TOKEN`). Bulk
+  `@Modifying(clearAutomatically = true)` repository queries detach loaded entities, so call them
+  after other entity changes in a service method.
 - Postgres is the runtime datastore (`prod` profile); H2 in-memory (`MODE=PostgreSQL`) is used for
   `local` and `test` profiles so the app/tests run without external services.
 

@@ -6,6 +6,7 @@ import com.oskott.dogtrainerbackend.common.security.CurrentUserProvider;
 import com.oskott.dogtrainerbackend.follow.entity.Follow;
 import com.oskott.dogtrainerbackend.follow.repository.FollowRepository;
 import com.oskott.dogtrainerbackend.moderation.repository.BlockRepository;
+import com.oskott.dogtrainerbackend.notification.service.NotificationService;
 import com.oskott.dogtrainerbackend.user.dto.PublicUserResponse;
 import com.oskott.dogtrainerbackend.user.repository.UserRepository;
 import org.springframework.stereotype.Service;
@@ -22,17 +23,20 @@ public class FollowService {
     private final UserRepository userRepository;
     private final CurrentUserProvider currentUserProvider;
     private final BlockRepository blockRepository;
+    private final NotificationService notificationService;
 
     public FollowService(
             FollowRepository followRepository,
             UserRepository userRepository,
             CurrentUserProvider currentUserProvider,
-            BlockRepository blockRepository
+            BlockRepository blockRepository,
+            NotificationService notificationService
     ) {
         this.followRepository = followRepository;
         this.userRepository = userRepository;
         this.currentUserProvider = currentUserProvider;
         this.blockRepository = blockRepository;
+        this.notificationService = notificationService;
     }
 
     @Transactional
@@ -52,6 +56,7 @@ public class FollowService {
             throw new BusinessRuleException("You cannot follow this user");
         }
         followRepository.save(new Follow(UUID.randomUUID(), followerId, followeeId, Instant.now()));
+        notificationService.notifyNewFollower(followerId, followeeId);
     }
 
     @Transactional

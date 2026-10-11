@@ -13,6 +13,7 @@ import com.oskott.dogtrainerbackend.comment.service.CommentService;
 import com.oskott.dogtrainerbackend.follow.service.FollowService;
 import com.oskott.dogtrainerbackend.like.service.LikeService;
 import com.oskott.dogtrainerbackend.moderation.service.ModerationService;
+import com.oskott.dogtrainerbackend.notification.service.NotificationService;
 import com.oskott.dogtrainerbackend.post.dto.CreatePostFromSessionRequest;
 import com.oskott.dogtrainerbackend.post.dto.CreatePostFromActivityRequest;
 import com.oskott.dogtrainerbackend.post.dto.CreatePostRequest;
@@ -67,6 +68,7 @@ public class PostService {
     private final StorageService storageService;
     private final LikeService likeService;
     private final CommentService commentService;
+    private final NotificationService notificationService;
 
     public PostService(
             PostRepository postRepository,
@@ -80,7 +82,8 @@ public class PostService {
             CurrentUserProvider currentUserProvider,
             StorageService storageService,
             LikeService likeService,
-            CommentService commentService
+            CommentService commentService,
+            NotificationService notificationService
     ) {
         this.postRepository = postRepository;
         this.userRepository = userRepository;
@@ -94,6 +97,7 @@ public class PostService {
         this.storageService = storageService;
         this.likeService = likeService;
         this.commentService = commentService;
+        this.notificationService = notificationService;
     }
 
     @Transactional
@@ -103,6 +107,7 @@ public class PostService {
         dogIds.forEach(dogService::getOwnedDog);
         Post post = new Post(UUID.randomUUID(), authorId, dogIds, null, request.content(), null, Instant.now());
         postRepository.save(post);
+        notificationService.notifyNewPost(post);
         return toResponse(post);
     }
 
@@ -125,6 +130,7 @@ public class PostService {
 
         Post post = new Post(UUID.randomUUID(), authorId, List.of(session.dogId()), sessionId, content, null, Instant.now());
         postRepository.save(post);
+        notificationService.notifyNewPost(post);
         return toResponse(post);
     }
 
@@ -147,6 +153,7 @@ public class PostService {
 
         Post post = new Post(UUID.randomUUID(), authorId, activity.dogIds(), null, activityId, content, null, Instant.now());
         postRepository.save(post);
+        notificationService.notifyNewPost(post);
         return toResponse(post);
     }
 
@@ -191,6 +198,7 @@ public class PostService {
         Post post = getOwnedPost(postId);
         storageService.deleteObjectIfPresent(storageService.extractObjectKey(post.getImageUrl()));
         postRepository.delete(post);
+        notificationService.deleteForPost(postId);
     }
 
     public UploadUrlResponse createMediaUploadUrl(UUID postId, UploadUrlRequest request) {
